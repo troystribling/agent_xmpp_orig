@@ -8,28 +8,79 @@ module AgentXmpp
   class Connection < EventMachine::Connection
 
     #---------------------------------------------------------------------------------------------------------
-    include Parser
+    include EventMachine::XmlPushParser
     #---------------------------------------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------------------------------------
     attr_accessor :host, :port
     #---------------------------------------------------------------------------------------------------------
 
+    #---------------------------------------------------------------------------------------------------------
+    # EventMachine::Connection callbacks
     #.........................................................................................................
     def connection_completed
       puts 'connection_completed'
+      @stream_features, @stream_mechanisms = {}, []
       self.init(self.host)
     end
 
     #.........................................................................................................
     def receive_data(data)
       puts "receive_data: #{data.to_s}"
-      self.parse(data)
+      super(data)
     end
 
     #.........................................................................................................
     def send(data, &blk)
       self.send_data(data.to_s)
+    end
+
+    #---------------------------------------------------------------------------------------------------------
+    # EventMachine::XmlPushParser callbacks
+    #.........................................................................................................
+		def start_document
+		  puts "start_document"
+		end
+    
+    #.........................................................................................................
+    def start_element name, attrs
+		  puts "start_element: #{name}, #{attrs}"
+      # e = REXML::Element.new(name)
+      # e.add_attributes attrs
+      # 
+      # @current = @current.nil? ? e : @current.add_element(e)
+      # 
+      # if @current.name == 'stream' and not @started
+      #   @started = true
+      #   process
+      #   @current = nil
+      # end
+    end
+    
+    #.........................................................................................................
+    def end_element name
+		  puts "end_element: #{name}"
+      # if name == 'stream:stream' and @current.nil?
+      #   @started = false
+      # else
+      #   if @current.parent
+      #     @current = @current.parent
+      #   else
+      #     process
+      #     @current = nil
+      #   end
+      # end
+    end
+
+    #.........................................................................................................
+    def characters text
+		  puts "characters: #{text}"
+      # @current.text = @current.text.to_s + text if @current
+    end
+
+    #.........................................................................................................
+    def error *args
+      p ['error', *args]
     end
 
     #---------------------------------------------------------------------------------------------------------
