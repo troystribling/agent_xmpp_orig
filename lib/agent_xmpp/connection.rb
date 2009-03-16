@@ -4,8 +4,6 @@ module AgentXmpp
   ############################################################################################################
   class NotConnected < Exception; end
 
-  class ClientAuthenticationFailure < Jabber::JabberError; end
-
   ############################################################################################################
   class Connection < EventMachine::Connection
 
@@ -62,7 +60,7 @@ module AgentXmpp
     #.........................................................................................................
     def connection_completed
       puts 'connection_completed'
-      self.init(self.host)
+      self.init_connection(self.host)
       self.broadcast_to_delegates(:did_connect, self)
     end
 
@@ -82,14 +80,22 @@ module AgentXmpp
     #.........................................................................................................
     def receive(stanza)
       
-      if (stanza.kind_of?(Jabber::XMPPStanza) and stanza.id and blk = @id_callbacks[stanza.id])
+      if stanza.kind_of?(Jabber::XMPPStanza) and stanza.id and blk = @id_callbacks[stanza.id]
         @id_callbacks.delete(stanza.id)
         blk.call(stanza)
         return
       end
 
-      case stanza.name
-      when 'features'
+      case stanza.xpath
+      when 'stream:features'
+        @stream_features, @stream_mechanisms = {}, []
+        @current.each do |e|
+          if e.name == 'mechanisms' and e.namespace == 'urn:ietf:params:xml:ns:xmpp-sasl'
+            e.each_element('mechanism') {|mech| @stream_mechanisms.push(mech.text)}
+          else
+            @stream_features[e.name] = e.namespace
+          end
+        end
         if @connection_status.eql?(:offline)
           self.authenticate
         elsif @connection_status.eql?(:authenticated)
@@ -99,7 +105,7 @@ module AgentXmpp
         case self.connection_status
         when :offline
           self.reset_parser
-          self.init(false)
+          self.init_connection(false)
           @connection_status = :authenticated
         end
         return
@@ -111,16 +117,11 @@ module AgentXmpp
         end
       end
       
-      # case stanza
-      # when Jabber::Message
-      #   on(:message, stanza)
-      # 
-      # when Jabber::Iq
-      #   on(:iq, stanza)
-      # 
-      # when Jabber::Presence
-      #   on(:presence, stanza)
-      # end
+      stanza_type = stanza.class.to_s
+      unless stanza_type.eql?('REXML::Element')
+        method = ('received_' + /^.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
+        self.broadcast_to_delegates(method, self, stanza)
+      end
 
     end
 
@@ -163,13 +164,14 @@ module AgentXmpp
           if reply.type == :result                
             @connection_status = :active
             self.broadcast_to_delegates(:did_authenticate, self, stanza)
+            self.init_session
           end
         end
       end
     end
   
     #.........................................................................................................
-    def init(starting=true)
+    def init_connection(starting=true)
       self.send("<?xml version='1.0' ?>") if starting
       self.send("<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0' to='#{self.host}'>" )
     end
@@ -177,6 +179,10 @@ module AgentXmpp
     #.........................................................................................................
     def broadcast_to_delegates(method, *args)
       self.delegates.each{|d| d.send(method, *args) if d.respond_to?(method)}
+    end
+
+    #.........................................................................................................
+    def init_session
     end
 
   ############################################################################################################

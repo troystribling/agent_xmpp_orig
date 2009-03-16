@@ -52,30 +52,13 @@ module AgentXmpp
     #.........................................................................................................
     def process
       @current.add_namespace(@streamns) if @current.namespace('').to_s.eql?('')
-      case @current.prefix
-      when 'stream'
-        case @current.name
-          when 'stream'
-            @streamid = @current.attributes['id']
-            @streamns = @current.namespace('') if @current.namespace('')
-            @streamns = 'jabber:client' if @streamns == 'jabber:component:accept'
-          when 'features'
-            @stream_features, @stream_mechanisms = {}, []
-            @current.each do |e|
-              if e.name == 'mechanisms' and e.namespace == 'urn:ietf:params:xml:ns:xmpp-sasl'
-                e.each_element('mechanism') {|mech| @stream_mechanisms.push(mech.text)}
-              else
-                @stream_features[e.name] = e.namespace
-              end
-            end
-        end
+      begin
+        stanza = Jabber::XMPPStanza::import(@current)
+      rescue Jabber::NoNameXmlnsRegistered
         stanza = @current
-      else
-        begin
-          stanza = Jabber::XMPPStanza::import(@current)
-        rescue Jabber::NoNameXmlnsRegistered
-          stanza = @current
-        end
+      end
+      if @current.xpath.eql?('stream:stream')
+        @streamns = @current.namespace('') if @current.namespace('')
       end
       self.receive(stanza) if self.respond_to?(:receive)
     end
