@@ -160,7 +160,7 @@ module AgentXmpp
         iq = Jabber::Iq.new(:set)
         session = iq.add REXML::Element.new('session')
         session.add_namespace self.stream_features['session']                
-        send(iq) do |reply|
+        self.send(iq) do |reply|
           if reply.type == :result                
             @connection_status = :active
             self.broadcast_to_delegates(:did_authenticate, self, stanza)
@@ -183,6 +183,7 @@ module AgentXmpp
 
     #.........................................................................................................
     def init_session
+      self.send(Jabber::Presence.new(nil, nil, 1))
     end
 
   ############################################################################################################
