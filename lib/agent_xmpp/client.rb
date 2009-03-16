@@ -5,23 +5,63 @@ module AgentXmpp
   class Client
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :host, :port, :connection, :user
+    attr_reader :host, :port, :jid, :password
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(host, port=5222)
-      @host, @port = host, port
+    def initialize(jid, password, host, port=5222)
+      @host, @port, @jid, @password = host, port, jid, password
     end
 
     #.........................................................................................................
     def connect
       EventMachine.run do
-        EventMachine.connect(self.host, self.port, Connection, self.host, self.port) do |c|
-          @connection = c
-          @connection.host = self.host
-          @connection.port = self.port
-        end
+        @connection = EventMachine.connect(self.host, self.port, Connection, self.jid, 
+          self.password, self.host, self.port)
+        @connection.add_delegate(self)
       end
+    end
+
+    #.........................................................................................................
+    def reconnect
+      @connection.reconnect
+    end
+
+    #.........................................................................................................
+    def connected?
+      @connection and !@connection.error?
+    end
+
+    #.........................................................................................................
+    def add_delegate(delegate)
+      @connection.add_delegate(delegate)
+    end
+
+    #.........................................................................................................
+    def remove_delegate(delegate)
+      @connection.remove_delegate(delegate)
+    end
+    
+    #---------------------------------------------------------------------------------------------------------
+    # AgentXmpp::Connection delegate
+    #.........................................................................................................
+    def did_connect(connection)
+      puts "CONNECTED"
+    end
+
+    #.........................................................................................................
+    def did_not_connect(connection)
+      puts "CONNECTION FAILED"
+    end
+
+    #.........................................................................................................
+    def did_authenticate(connection, stanza)
+      puts "AUTHENTICATED"
+    end
+ 
+    #.........................................................................................................
+    def did_not_authenticate(connection, stanza)
+      puts "AUTHENTICATION FAILED"
     end
 
   ############################################################################################################

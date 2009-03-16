@@ -3,4 +3,4 @@
 $:.unshift 'lib'
 require 'agent_xmpp'
 
-AgentXmpp::Client.new('plan-b.ath.cx').connect
+AgentXmpp::Client.new('bill@plan-b.ath.cx', 'pass', 'plan-b.ath.cx').connect

@@ -9,20 +9,21 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------------------------------------
+    attr_reader :stream_features, :stream_mechanisms
+    #---------------------------------------------------------------------------------------------------------
+
+    #---------------------------------------------------------------------------------------------------------
     # EventMachine::XmlPushParser callbacks
     #.........................................................................................................
   	def start_document
-  	  puts "start_document"
   	end
   
     #.........................................................................................................
     def start_element(name, attrs)
-  	  puts "start_element: name:#{name}, #{attrs}"
       e = REXML::Element.new(name)
       e.add_attributes(attrs)      
       @current = @current.nil? ? e : @current.add_element(e)  
-      if @current.name == 'stream' and not @started
-        @started = true
+      if @current.xpath == 'stream:stream'
         process
         @current = nil
       end
@@ -30,22 +31,16 @@ module AgentXmpp
   
     #.........................................................................................................
     def end_element(name)
-  	  puts "end_element: #{name}"
-      if name == 'stream:stream' and @current.nil?
-        @started = false
+      if @current.parent
+        @current = @current.parent
       else
-        if @current.parent
-          @current = @current.parent
-        else
-          self.process
-          @current = nil
-        end
+        self.process
+        @current = nil
       end
     end
 
     #.........................................................................................................
     def characters(text)
-  	  puts "characters: #{text}"
       @current.text = @current.text.to_s + text if @current
     end
 
@@ -54,10 +49,6 @@ module AgentXmpp
       p ['error', *args]
     end
 
-    #---------------------------------------------------------------------------------------------------------
-    protected
-    #---------------------------------------------------------------------------------------------------------
-  
     #.........................................................................................................
     def process
       @current.add_namespace(@streamns) if @current.namespace('').to_s.eql?('')
@@ -86,7 +77,7 @@ module AgentXmpp
           stanza = @current
         end
       end
-      # @client.receive(stanza)
+      self.receive(stanza) if self.respond_to?(:receive)
     end
    
   ############################################################################################################
