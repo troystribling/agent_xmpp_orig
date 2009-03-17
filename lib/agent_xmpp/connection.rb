@@ -16,7 +16,7 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(jid, password, host, resource, port=5222)
+    def initialize(jid, password, host, resource, logger, port=5222)
       @resource, @host, @port, @jid, @password = resource, host, port, jid, password
       @connection_status = :offline;
       @id_callbacks = {}
@@ -35,7 +35,7 @@ module AgentXmpp
     
     #.........................................................................................................
     def send(data, &blk)
-      puts "SEND: #{data.to_s}"
+      AgentXmpp::logger.info "SEND: #{data.to_s}"
       raise NotConnected if self.error?
       if block_given? and data.is_a? Jabber::XMPPStanza
         if data.id.nil?
@@ -65,7 +65,7 @@ module AgentXmpp
 
     #.........................................................................................................
     def receive_data(data)
-      puts "RECV: #{data.to_s}"
+      AgentXmpp::logger.info "RECV: #{data.to_s}"
       super(data)
     end
 

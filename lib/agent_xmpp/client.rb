@@ -51,22 +51,22 @@ module AgentXmpp
     # AgentXmpp::Connection delegate
     #.........................................................................................................
     def did_connect(connection)
-      puts "CONNECTED"
+      AgentXmpp::logger.info "CONNECTED"
     end
 
     #.........................................................................................................
     def did_not_connect(connection)
-      puts "CONNECTION FAILED"
+      AgentXmpp::logger.info "CONNECTION FAILED"
     end
 
     #.........................................................................................................
     def did_authenticate(connection, stanza)
-      puts "AUTHENTICATED"
+      AgentXmpp::logger.info "AUTHENTICATED"
     end
  
     #.........................................................................................................
     def did_not_authenticate(connection, stanza)
-      puts "AUTHENTICATION FAILED"
+      AgentXmpp::logger.info "AUTHENTICATION FAILED"
     end
 
   ############################################################################################################
