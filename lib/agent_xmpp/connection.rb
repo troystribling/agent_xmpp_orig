@@ -12,12 +12,12 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :host, :port, :password, :connection_status, :delegates
+    attr_reader :resource, :host, :port, :password, :connection_status, :delegates
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(jid, password, host, port=5222)
-      @host, @port, @jid, @password = host, port, jid, password
+    def initialize(jid, password, host, resource, port=5222)
+      @resource, @host, @port, @jid, @password = resource, host, port, jid, password
       @connection_status = :offline;
       @id_callbacks = {}
       @delegates = []
@@ -59,7 +59,6 @@ module AgentXmpp
     # EventMachine::Connection callbacks
     #.........................................................................................................
     def connection_completed
-      puts 'connection_completed'
       self.init_connection(self.host)
       self.broadcast_to_delegates(:did_connect, self)
     end
@@ -119,7 +118,7 @@ module AgentXmpp
       
       stanza_type = stanza.class.to_s
       unless stanza_type.eql?('REXML::Element')
-        method = ('received_' + /^.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
+        method = ('received_' + /.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)
       end
 
@@ -144,6 +143,8 @@ module AgentXmpp
         iq = Jabber::Iq.new(:set)
         bind = iq.add(REXML::Element.new('bind'))
         bind.add_namespace(self.stream_features['bind'])                
+        resource = bind.add REXML::Element.new('resource')
+        resource.text = self.resource
         self.send(iq) do |reply|
           if reply.type == :result and jid = reply.first_element('//jid') and jid.text
             @jid = Jabber::JID.new(jid.text)
@@ -184,6 +185,7 @@ module AgentXmpp
     #.........................................................................................................
     def init_session
       self.send(Jabber::Presence.new(nil, nil, 1))
+      self.send(Jabber::Iq.new_rosterget)
     end
 
   ############################################################################################################

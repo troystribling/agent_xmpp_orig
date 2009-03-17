@@ -5,19 +5,24 @@ module AgentXmpp
   class Client
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :host, :port, :jid, :password
+    attr_reader :resource, :host, :port, :jid, :password
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(jid, password, host, port=5222)
-      @host, @port, @jid, @password = host, port, jid, password
+    def initialize(config)
+      @jid = config['jid']
+      @password = config['password']
+      @resource = config['resource'] || Socket.gethostname
+      @port = config['port'] || 5222
+      @host = config['host'] || /.*@(.*)/.match(@jid).to_a.last
+      @contacts = config['contacts']
     end
 
     #.........................................................................................................
     def connect
       EventMachine.run do
         @connection = EventMachine.connect(self.host, self.port, Connection, self.jid, 
-          self.password, self.host, self.port)
+          self.password, self.host, self.resource, self.port)
         @connection.add_delegate(self)
       end
     end
