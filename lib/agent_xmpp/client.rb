@@ -73,21 +73,32 @@ module AgentXmpp
    def did_receive_presence(connection, presence)
      AgentXmpp::logger.info "RECEIVED PRESENCE"
      p presence
+     p presence.methods
+     # if self.roster.has_key?(roster_item_jid) 
+     # end
    end
 
    #.........................................................................................................
    def did_receive_roster_item(connection, roster_item)
-     AgentXmpp::logger.info "RECEIVED ROSTER"   
-     if self.roster.has_key?(roster_item.jid.to_s) 
-       puts roster_item.jid.to_s
-       self.roster[roster_item.jid.to_s][:activated] = true 
+     AgentXmpp::logger.info "RECEIVED ROSTER ITEM"   
+     roster_item_jid = roster_item.jid.to_s
+     if self.roster.has_key?(roster_item_jid) 
+       self.roster[roster_item_jid][:activated] = true 
+       self.roster[roster_item_jid][:roster_item] = roster_item 
+       AgentXmpp::logger.info "ACTIVATING CONTACT: #{roster_item_jid}"   
+     else
+       AgentXmpp::logger.info "REMOVING CONTACT: #{roster_item_jid}"   
      end
    end
 
    #.........................................................................................................
    def did_receive_all_roster_items(connection)
      AgentXmpp::logger.info "RECEIVED ALL ROSTER ITEMS"   
-     self.roster.each{|k,v| puts "jid:#{k}, item: #{v}"}
+#     self.roster.select{|k,v| not v[k][:activated]}.each do |k,v|
+     self.roster.each do |k,v|
+#       puts "jid:#{k}, item: #{v[k][:activated]}"
+       AgentXmpp::logger.info "ADDING CONTACT: #{k}"   
+     end
    end
 
   ############################################################################################################
