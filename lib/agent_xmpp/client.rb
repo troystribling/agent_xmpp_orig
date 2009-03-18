@@ -5,7 +5,7 @@ module AgentXmpp
   class Client
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :resource, :host, :port, :jid, :password
+    attr_reader :resource, :host, :port, :jid, :password, :roster
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
@@ -15,7 +15,7 @@ module AgentXmpp
       @resource = config['resource'] || Socket.gethostname
       @port = config['port'] || 5222
       @host = config['host'] || /.*@(.*)/.match(@jid).to_a.last
-      @contacts = config['contacts']
+      @roster = Roster.new(config['contacts'])
     end
 
     #.........................................................................................................
@@ -68,6 +68,27 @@ module AgentXmpp
     def did_not_authenticate(connection, stanza)
       AgentXmpp::logger.info "AUTHENTICATION FAILED"
     end
+
+   #.........................................................................................................
+   def did_receive_presence(connection, presence)
+     AgentXmpp::logger.info "RECEIVED PRESENCE"
+     p presence
+   end
+
+   #.........................................................................................................
+   def did_receive_roster_item(connection, roster_item)
+     AgentXmpp::logger.info "RECEIVED ROSTER"   
+     if self.roster.has_key?(roster_item.jid.to_s) 
+       puts roster_item.jid.to_s
+       self.roster[roster_item.jid.to_s][:activated] = true 
+     end
+   end
+
+   #.........................................................................................................
+   def did_receive_all_roster_items(connection)
+     AgentXmpp::logger.info "RECEIVED ALL ROSTER ITEMS"   
+     self.roster.each{|k,v| puts "jid:#{k}, item: #{v}"}
+   end
 
   ############################################################################################################
   # Client

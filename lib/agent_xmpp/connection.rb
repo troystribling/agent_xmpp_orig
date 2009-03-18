@@ -118,7 +118,7 @@ module AgentXmpp
       
       stanza_type = stanza.class.to_s
       unless stanza_type.eql?('REXML::Element')
-        method = ('received_' + /.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
+        method = ('did_receive_' + /.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)
       end
 
@@ -165,7 +165,8 @@ module AgentXmpp
           if reply.type == :result                
             @connection_status = :active
             self.broadcast_to_delegates(:did_authenticate, self, stanza)
-            self.init_session
+            self.send(Jabber::Presence.new(nil, nil, 1))
+            self.get_roster
           end
         end
       end
@@ -183,9 +184,13 @@ module AgentXmpp
     end
 
     #.........................................................................................................
-    def init_session
-      self.send(Jabber::Presence.new(nil, nil, 1))
-      self.send(Jabber::Iq.new_rosterget)
+    def get_roster
+      self.send(Jabber::Iq.new_rosterget) do |r|
+        if r.type == :result and r.query.kind_of?(Jabber::Roster::IqQueryRoster)
+          r.query.each_element {|i|  self.broadcast_to_delegates(:did_receive_roster_item, self, i)}
+          self.broadcast_to_delegates(:did_receive_all_roster_items, self)
+        end
+      end
     end
 
   ############################################################################################################
