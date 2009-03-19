@@ -87,7 +87,7 @@ module AgentXmpp
        self.roster[roster_item_jid][:roster_item] = roster_item 
        AgentXmpp::logger.info "ACTIVATING CONTACT: #{roster_item_jid}"   
      else
-       @connection.remove_contact(Jabber::JID.new(j))  
+       @connection.remove_contact(roster_item.jid)  
        AgentXmpp::logger.info "REMOVING CONTACT: #{roster_item_jid}"   
      end
    end
@@ -116,6 +116,10 @@ module AgentXmpp
      AgentXmpp::logger.info "CONTACT ADDED"
    end
 
+   #.........................................................................................................
+   def did_remove_contact(connection, stanza)
+     AgentXmpp::logger.info "CONTACT REMOVED"
+   end
 
   ############################################################################################################
   # Client

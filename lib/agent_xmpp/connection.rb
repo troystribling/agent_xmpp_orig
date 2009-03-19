@@ -80,9 +80,9 @@ module AgentXmpp
     #.........................................................................................................
     def remove_contact(contact_jid)
       request = Jabber::Iq.new_rosterset
-      request.query.add(Jabber::Roster::RosterItem.new(contact_jid))
+      request.query.add(Jabber::Roster::RosterItem.new(contact_jid, nil, :remove))
       self.send(request) do |r|
-        self.broadcast_to_delegates(:did_add_contact, self, r)
+        self.broadcast_to_delegates(:did_remove_contact, self, r)
       end
     end
 
