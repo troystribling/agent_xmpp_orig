@@ -12,12 +12,12 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :resource, :host, :port, :password, :connection_status, :delegates
+    attr_reader :jid, :port, :password, :connection_status, :delegates
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(jid, password, host, resource, logger, port=5222)
-      @resource, @host, @port, @jid, @password = resource, host, port, jid, password
+    def initialize(jid, password, port=5222)
+      @jid, @password, @port = jid, password, port
       @connection_status = :offline;
       @id_callbacks = {}
       @delegates = []
@@ -46,12 +46,43 @@ module AgentXmpp
       self.send_data(data.to_s)
     end
 
+    #---------------------------------------------------------------------------------------------------------
+    # roster management
     #.........................................................................................................
-    def jid
-      if @jid.kind_of?(Jabber::JID)
-        @jid
-      else
-        @jid =~ /@/ ? Jabber::JID.new(@jid) : Jabber::JID.new(@jid, 'localhost')
+    def get_roster
+      self.send(Jabber::Iq.new_rosterget) do |r|
+        if r.type == :result and r.query.kind_of?(Jabber::Roster::IqQueryRoster)
+          r.query.each_element {|i|  self.broadcast_to_delegates(:did_receive_roster_item, self, i)}
+          self.broadcast_to_delegates(:did_receive_all_roster_items, self)
+        end
+      end
+    end
+
+    #.........................................................................................................
+    def remove_contact
+      self.send(Jabber::Iq.new_rosterget) do |r|
+        if r.type == :result and r.query.kind_of?(Jabber::Roster::IqQueryRoster)
+          r.query.each_element {|i|  self.broadcast_to_delegates(:did_receive_roster_item, self, i)}
+          self.broadcast_to_delegates(:did_receive_all_roster_items, self)
+        end
+      end
+    end
+
+    #.........................................................................................................
+    def add_contact(contact_jid)
+      request = Jabber::Iq.new_rosterset
+      request.query.add(Jabber::Roster::RosterItem.new(contact_jid))
+      self.send(request) do |r|
+        self.broadcast_to_delegates(:did_add_contact, self, r)
+      end
+    end
+
+    #.........................................................................................................
+    def remove_contact(contact_jid)
+      request = Jabber::Iq.new_rosterset
+      request.query.add(Jabber::Roster::RosterItem.new(contact_jid))
+      self.send(request) do |r|
+        self.broadcast_to_delegates(:did_add_contact, self, r)
       end
     end
 
@@ -59,7 +90,7 @@ module AgentXmpp
     # EventMachine::Connection callbacks
     #.........................................................................................................
     def connection_completed
-      self.init_connection(self.host)
+      self.init_connection
       self.broadcast_to_delegates(:did_connect, self)
     end
 
@@ -116,11 +147,8 @@ module AgentXmpp
         end
       end
       
-      stanza_type = stanza.class.to_s
-      unless stanza_type.eql?('REXML::Element')
-        method = ('did_receive_' + /.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
-        self.broadcast_to_delegates(method, self, stanza)
-      end
+      
+    self.do_broadcast(stanza)  unless stanza.class.to_s.eql?('REXML::Element')
 
     end
 
@@ -144,7 +172,7 @@ module AgentXmpp
         bind = iq.add(REXML::Element.new('bind'))
         bind.add_namespace(self.stream_features['bind'])                
         resource = bind.add REXML::Element.new('resource')
-        resource.text = self.resource
+        resource.text = self.jid.resource
         self.send(iq) do |reply|
           if reply.type == :result and jid = reply.first_element('//jid') and jid.text
             @jid = Jabber::JID.new(jid.text)
@@ -171,26 +199,34 @@ module AgentXmpp
         end
       end
     end
-  
+
     #.........................................................................................................
     def init_connection(starting=true)
       self.send("<?xml version='1.0' ?>") if starting
-      self.send("<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0' to='#{self.host}'>" )
+      self.send("<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0' to='#{self.jid.domain}'>" )
     end
 
+    #.........................................................................................................
+    def do_broadcast(stanza)
+      stanza_type = stanza.class.to_s
+      # roster update
+      if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
+        stanza.query.each_element do |i|  
+          method =  case i.subscription
+                    when :remove : :did_remove_roster_item
+                    when :none   : :did_receive_roster_item
+                    end         
+          self.broadcast_to_delegates(method, self, i)
+        end
+      else
+        method = ('did_receive_' + /.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
+        self.broadcast_to_delegates(method, self, stanza)
+      end
+    end
+  
     #.........................................................................................................
     def broadcast_to_delegates(method, *args)
       self.delegates.each{|d| d.send(method, *args) if d.respond_to?(method)}
-    end
-
-    #.........................................................................................................
-    def get_roster
-      self.send(Jabber::Iq.new_rosterget) do |r|
-        if r.type == :result and r.query.kind_of?(Jabber::Roster::IqQueryRoster)
-          r.query.each_element {|i|  self.broadcast_to_delegates(:did_receive_roster_item, self, i)}
-          self.broadcast_to_delegates(:did_receive_all_roster_items, self)
-        end
-      end
     end
 
   ############################################################################################################

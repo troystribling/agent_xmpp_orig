@@ -5,24 +5,23 @@ module AgentXmpp
   class Client
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :resource, :host, :port, :jid, :password, :roster
+    attr_reader :jid, :port, :password, :roster
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
     def initialize(config)
-      @jid = config['jid']
       @password = config['password']
-      @resource = config['resource'] || Socket.gethostname
       @port = config['port'] || 5222
-      @host = config['host'] || /.*@(.*)/.match(@jid).to_a.last
-      @roster = Roster.new(config['contacts'])
+      resource = config['resource'] || Socket.gethostname
+      @jid = Jabber::JID.new("#{config['jid']}/#{resource}")
+      @roster = Roster.new(@jid, config['contacts'])
     end
 
     #.........................................................................................................
     def connect
       EventMachine.run do
-        @connection = EventMachine.connect(self.host, self.port, Connection, self.jid, 
-          self.password, self.host, self.resource, self.port)
+        @connection = EventMachine.connect(self.jid.domain, self.port, Connection, self.jid, 
+          self.password, self.port)
         @connection.add_delegate(self)
       end
     end
@@ -71,11 +70,12 @@ module AgentXmpp
 
    #.........................................................................................................
    def did_receive_presence(connection, presence)
-     AgentXmpp::logger.info "RECEIVED PRESENCE"
-     p presence
-     p presence.methods
-     # if self.roster.has_key?(roster_item_jid) 
-     # end
+     from_jid = presence.from.to_s     
+     from_bare_jid = presence.from.bare.to_s     
+     if self.roster.has_key?(from_bare_jid) 
+       self.roster[from_bare_jid][:resources][from_jid] = presence
+     end
+     AgentXmpp::logger.info "RECEIVED PRESENCE FROM: #{from_jid}"
    end
 
    #.........................................................................................................
@@ -87,19 +87,35 @@ module AgentXmpp
        self.roster[roster_item_jid][:roster_item] = roster_item 
        AgentXmpp::logger.info "ACTIVATING CONTACT: #{roster_item_jid}"   
      else
+       @connection.remove_contact(Jabber::JID.new(j))  
        AgentXmpp::logger.info "REMOVING CONTACT: #{roster_item_jid}"   
+     end
+   end
+
+   #.........................................................................................................
+   def did_remove_roster_item(connection, roster_item)
+     AgentXmpp::logger.info "REMOVE ROSTER ITEM"   
+     roster_item_jid = roster_item.jid.to_s
+     if self.roster.has_key?(roster_item_jid) 
+       self.roster.delete(roster_item_jid) 
+       AgentXmpp::logger.info "REMOVED CONTACT: #{roster_item_jid}"   
      end
    end
 
    #.........................................................................................................
    def did_receive_all_roster_items(connection)
      AgentXmpp::logger.info "RECEIVED ALL ROSTER ITEMS"   
-#     self.roster.select{|k,v| not v[k][:activated]}.each do |k,v|
-     self.roster.each do |k,v|
-#       puts "jid:#{k}, item: #{v[k][:activated]}"
-       AgentXmpp::logger.info "ADDING CONTACT: #{k}"   
+     self.roster.select{|j,r| not r[:activated]}.each do |j,r|
+       AgentXmpp::logger.info "ADDING CONTACT: #{j}" 
+       @connection.add_contact(Jabber::JID.new(j))  
      end
    end
+
+   #.........................................................................................................
+   def did_add_contact(connection, stanza)
+     AgentXmpp::logger.info "CONTACT ADDED"
+   end
+
 
   ############################################################################################################
   # Client
