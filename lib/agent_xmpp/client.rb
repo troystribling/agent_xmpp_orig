@@ -112,13 +112,14 @@ module AgentXmpp
    end
 
    #.........................................................................................................
-   def did_add_contact(connection, stanza)
-     AgentXmpp::logger.info "CONTACT ADDED"
+   def did_add_contact(connection, response, contact_jid)
+     AgentXmpp::logger.info "CONTACT ADDED: #{contact_jid.to_s}"
    end
 
    #.........................................................................................................
-   def did_remove_contact(connection, stanza)
-     AgentXmpp::logger.info "CONTACT REMOVED"
+   def did_remove_contact(connection, response, contact_jid)
+     p contact_jid
+     AgentXmpp::logger.info "CONTACT REMOVED: #{contact_jid.to_s}"
    end
 
   ############################################################################################################
