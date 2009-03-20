@@ -73,7 +73,8 @@ module AgentXmpp
       request = Jabber::Iq.new_rosterset
       request.query.add(Jabber::Roster::RosterItem.new(contact_jid))
       self.send(request) do |r|
-        self.broadcast_to_delegates(:did_add_contact, self, r, contact_jid)
+        self.send(Jabber::Presence.new.set_type(:subscribe).set_to(contact_jid))
+        self.broadcast_to_delegates(:did_acknowledge_add_contact, self, r, contact_jid)
       end
     end
 
@@ -84,6 +85,13 @@ module AgentXmpp
       self.send(request) do |r|
         self.broadcast_to_delegates(:did_remove_contact, self, r, contact_jid)
       end
+    end
+
+    #.........................................................................................................
+    def accept_contact_request(contact_jid)
+      presence = Jabber::Presence.new.set_type(:subscribe)
+      presence.to = contact_jid      
+      self.send(presence)
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -208,18 +216,21 @@ module AgentXmpp
 
     #.........................................................................................................
     def do_broadcast(stanza)
-      stanza_type = stanza.class.to_s
+      stanza_class = stanza.class.to_s
       # roster update
       if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
         stanza.query.each_element do |i|  
           method =  case i.subscription
                     when :remove : :did_remove_roster_item
                     when :none   : :did_receive_roster_item
+                    when :to     : :did_add_contact
                     end         
-          self.broadcast_to_delegates(method, self, i)
+          self.broadcast_to_delegates(method, self, i) unless method.nil?
         end
+      elsif stanza.type == :subscribe and stanza_class.eql?('Jabber::Presence')
+        self.broadcast_to_delegates(:did_receive_contact_request, self, stanza)
       else
-        method = ('did_receive_' + /.*::(.*)/.match(stanza_type).to_a.last.downcase).to_sym
+        method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)
       end
     end
