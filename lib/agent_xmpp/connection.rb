@@ -47,6 +47,27 @@ module AgentXmpp
     end
 
     #---------------------------------------------------------------------------------------------------------
+    # service discovery
+    #.........................................................................................................
+    def get_client_version(contact_jid)
+      iq = Jabber::Iq.new(:get, contact_jid)
+      iq.query = Jabber::Version::IqQueryVersion.new
+      self.send(iq) do |r|
+        if (r.type == :result) && r.query.kind_of?(Jabber::Version::IqQueryVersion)
+          self.broadcast_to_delegates(:did_receive_client_version, self, r.from, r.query)
+        end
+      end
+    end
+
+    #.........................................................................................................
+    def send_client_version(contact_jid)
+      iq = Jabber::Iq.new(:result, contact_jid)
+      iq.query = Jabber::Version::IqQueryVersion.new
+      iq.query.set_iname(AgentXmpp::AGENT_XMPP_NAME).set_version(AgentXmpp::AGENT_XMPP_VERSION).set_os(AgentXmpp::OS_VERSION)
+      self.send(iq)
+    end
+    
+    #---------------------------------------------------------------------------------------------------------
     # roster management
     #.........................................................................................................
     def get_roster
@@ -177,9 +198,10 @@ module AgentXmpp
         bind.add_namespace(self.stream_features['bind'])                
         resource = bind.add REXML::Element.new('resource')
         resource.text = self.jid.resource
-        self.send(iq) do |reply|
-          if reply.type == :result and jid = reply.first_element('//jid') and jid.text
+        self.send(iq) do |r|
+          if r.type == :result and full_jid = r.first_element('//jid') and full_jid.text
             @connection_status = :bind
+            self.jid = Jabber::JID.new(full_jid.text) unless self.jid.to_s.eql?(full_jid.text)      
             self.broadcast_to_delegates(:did_bind, self, stanza)
             self.session(stanza)
           end
@@ -193,8 +215,8 @@ module AgentXmpp
         iq = Jabber::Iq.new(:set)
         session = iq.add REXML::Element.new('session')
         session.add_namespace self.stream_features['session']                
-        self.send(iq) do |reply|
-          if reply.type == :result                
+        self.send(iq) do |r|
+          if r.type == :result                
             @connection_status = :active
             self.broadcast_to_delegates(:did_authenticate, self, stanza)
             self.send(Jabber::Presence.new(nil, nil, 1))
@@ -213,7 +235,7 @@ module AgentXmpp
     #.........................................................................................................
     def do_broadcast(stanza)
       stanza_class = stanza.class.to_s
-      # roster update
+      #### roster update
       if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
         stanza.query.each_element do |i|  
           method =  case i.subscription
@@ -223,12 +245,15 @@ module AgentXmpp
                     end         
           self.broadcast_to_delegates(method, self, i) unless method.nil?
         end
-      # presence subscription request  
+      #### presence subscription request  
       elsif stanza.type == :subscribe and stanza_class.eql?('Jabber::Presence')
         self.broadcast_to_delegates(:did_receive_subscribe_request, self, stanza)
-      # presence unsubscribe 
+      #### presence unsubscribe 
       elsif stanza.type == :unsubscribed and stanza_class.eql?('Jabber::Presence')
         self.broadcast_to_delegates(:did_receive_unsubscribe_request, self, stanza)
+      #### client version request
+      elsif stanza.type == :get and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
+        self.send_client_version(stanza.from.to_s)
       else
         method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)
