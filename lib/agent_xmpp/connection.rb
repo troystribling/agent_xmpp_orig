@@ -35,7 +35,6 @@ module AgentXmpp
     
     #.........................................................................................................
     def send(data, &blk)
-      AgentXmpp::logger.info "SEND: #{data.to_s}"
       raise NotConnected if self.error?
       if block_given? and data.is_a? Jabber::XMPPStanza
         if data.id.nil?
@@ -44,22 +43,13 @@ module AgentXmpp
         @id_callbacks[data.id] = blk
       end
       self.send_data(data.to_s)
+      AgentXmpp::logger.info "SEND: #{data.to_s}"
     end
 
     #---------------------------------------------------------------------------------------------------------
     # roster management
     #.........................................................................................................
     def get_roster
-      self.send(Jabber::Iq.new_rosterget) do |r|
-        if r.type == :result and r.query.kind_of?(Jabber::Roster::IqQueryRoster)
-          r.query.each_element {|i|  self.broadcast_to_delegates(:did_receive_roster_item, self, i)}
-          self.broadcast_to_delegates(:did_receive_all_roster_items, self)
-        end
-      end
-    end
-
-    #.........................................................................................................
-    def remove_contact
       self.send(Jabber::Iq.new_rosterget) do |r|
         if r.type == :result and r.query.kind_of?(Jabber::Roster::IqQueryRoster)
           r.query.each_element {|i|  self.broadcast_to_delegates(:did_receive_roster_item, self, i)}
@@ -89,7 +79,14 @@ module AgentXmpp
 
     #.........................................................................................................
     def accept_contact_request(contact_jid)
-      presence = Jabber::Presence.new.set_type(:subscribe)
+      presence = Jabber::Presence.new.set_type(:subscribed)
+      presence.to = contact_jid      
+      self.send(presence)
+    end
+
+    #.........................................................................................................
+    def reject_contact_request(contact_jid)
+      presence = Jabber::Presence.new.set_type(:unsubscribed)
       presence.to = contact_jid      
       self.send(presence)
     end
@@ -153,11 +150,10 @@ module AgentXmpp
           self.reset_parser
           self.broadcast_to_delegates(:did_not_authenticate, self, stanza)
         end
+      else
+        self.do_broadcast(stanza)
       end
-      
-      
-    self.do_broadcast(stanza)  unless stanza.class.to_s.eql?('REXML::Element')
-
+            
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -183,8 +179,8 @@ module AgentXmpp
         resource.text = self.jid.resource
         self.send(iq) do |reply|
           if reply.type == :result and jid = reply.first_element('//jid') and jid.text
-            @jid = Jabber::JID.new(jid.text)
             @connection_status = :bind
+            self.broadcast_to_delegates(:did_bind, self, stanza)
             self.session(stanza)
           end
         end
@@ -227,8 +223,12 @@ module AgentXmpp
                     end         
           self.broadcast_to_delegates(method, self, i) unless method.nil?
         end
+      # presence subscription request  
       elsif stanza.type == :subscribe and stanza_class.eql?('Jabber::Presence')
-        self.broadcast_to_delegates(:did_receive_contact_request, self, stanza)
+        self.broadcast_to_delegates(:did_receive_subscribe_request, self, stanza)
+      # presence unsubscribe 
+      elsif stanza.type == :unsubscribed and stanza_class.eql?('Jabber::Presence')
+        self.broadcast_to_delegates(:did_receive_unsubscribe_request, self, stanza)
       else
         method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)
