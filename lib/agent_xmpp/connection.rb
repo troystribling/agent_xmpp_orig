@@ -236,7 +236,6 @@ module AgentXmpp
     #.........................................................................................................
     def do_broadcast(stanza)
       stanza_class = stanza.class.to_s
-p stanza.type      
       #### roster update
       if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
         stanza.query.each_element do |i|  
