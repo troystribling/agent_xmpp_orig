@@ -54,7 +54,7 @@ module AgentXmpp
       iq.query = Jabber::Version::IqQueryVersion.new
       self.send(iq) do |r|
         if (r.type == :result) && r.query.kind_of?(Jabber::Version::IqQueryVersion)
-          self.broadcast_to_delegates(:did_receive_client_version, self, r.from, r.query)
+          self.broadcast_to_delegates(:did_receive_client_version_result, self, r.from, r.query)
         end
       end
     end
@@ -157,6 +157,7 @@ module AgentXmpp
         elsif @connection_status.eql?(:authenticated)
           self.bind(stanza)
         end
+      when 'stream:stream'
       when 'success'
         case self.connection_status
         when :offline
@@ -235,6 +236,7 @@ module AgentXmpp
     #.........................................................................................................
     def do_broadcast(stanza)
       stanza_class = stanza.class.to_s
+p stanza.type      
       #### roster update
       if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
         stanza.query.each_element do |i|  
@@ -253,7 +255,7 @@ module AgentXmpp
         self.broadcast_to_delegates(:did_receive_unsubscribe_request, self, stanza)
       #### client version request
       elsif stanza.type == :get and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
-        self.send_client_version(stanza.from.to_s)
+        self.broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
       else
         method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)
