@@ -60,8 +60,9 @@ module AgentXmpp
     end
 
     #.........................................................................................................
-    def send_client_version(contact_jid)
-      iq = Jabber::Iq.new(:result, contact_jid)
+    def send_client_version(request)
+      iq = Jabber::Iq.new(:result, request.from.to_s)
+      iq.id = request.id unless request.id.nil?
       iq.query = Jabber::Version::IqQueryVersion.new
       iq.query.set_iname(AgentXmpp::AGENT_XMPP_NAME).set_version(AgentXmpp::AGENT_XMPP_VERSION).set_os(AgentXmpp::OS_VERSION)
       self.send(iq)
@@ -135,7 +136,6 @@ module AgentXmpp
     # AgentXmpp::Parser callbacks
     #.........................................................................................................
     def receive(stanza)
-      
       if stanza.kind_of?(Jabber::XMPPStanza) and stanza.id and blk = @id_callbacks[stanza.id]
         @id_callbacks.delete(stanza.id)
         blk.call(stanza)

@@ -87,7 +87,7 @@ module AgentXmpp
         first = self.roster[from_bare_jid.to_s][:resources][from_jid].nil? ? true : false
         self.roster[from_bare_jid.to_s][:resources][from_jid] = {} if first
         self.roster[from_bare_jid.to_s][:resources][from_jid][:presence] = presence
-        client_connection.get_client_version(from_jid) if first
+        client_connection.get_client_version(from_jid) if first and not from_jid.eql?(client_connection.jid.to_s)
         AgentXmpp::logger.info "RECEIVED PRESENCE FROM: #{from_jid}"
       else
         AgentXmpp::logger.warn "RECEIVED PRESENCE FROM JID NOT IN CONTACT LIST: #{from_jid}"        
@@ -177,9 +177,9 @@ module AgentXmpp
     end
 
     #.........................................................................................................
-    def did_receive_client_version_request(client_connection, stanza)
-      client_connection.send_client_version(stanza.from.to_s)
-      AgentXmpp::logger.info "RECEIVED CLIENT VERSION REQUEST: #{from.to_s}"
+    def did_receive_client_version_request(client_connection, request)
+      client_connection.send_client_version(request)
+      AgentXmpp::logger.info "RECEIVED CLIENT VERSION REQUEST: #{request.from.to_s}"
     end
 
   ############################################################################################################
