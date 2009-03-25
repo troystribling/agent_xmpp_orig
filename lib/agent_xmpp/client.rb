@@ -86,7 +86,7 @@ module AgentXmpp
       if self.roster.has_key?(from_bare_jid) 
         self.roster[from_bare_jid.to_s][:resources][from_jid] = {} if self.roster[from_bare_jid.to_s][:resources][from_jid].nil?
         self.roster[from_bare_jid.to_s][:resources][from_jid][:presence] = presence
-        client_connection.get_client_version(from_jid) unless from_jid.eql?(client_connection.jid.to_s)
+        client_connection.get_client_version(from_jid) if not from_jid.eql?(client_connection.jid.to_s) and presence.type.nil?
         AgentXmpp::logger.info "RECEIVED PRESENCE FROM: #{from_jid}"
       else
         AgentXmpp::logger.warn "RECEIVED PRESENCE FROM JID NOT IN CONTACT LIST: #{from_jid}"        
