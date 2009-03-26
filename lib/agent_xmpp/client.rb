@@ -56,6 +56,11 @@ module AgentXmpp
     end
 
     #.........................................................................................................
+    def did_disconnect(client_connection)
+      AgentXmpp::logger.info "DISCONNECTED"
+    end
+
+    #.........................................................................................................
     def did_not_connect(client_connection)
       AgentXmpp::logger.info "CONNECTION FAILED"
     end

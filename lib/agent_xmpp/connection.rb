@@ -12,7 +12,7 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :jid, :port, :password, :connection_status, :delegates
+    attr_reader :jid, :port, :password, :connection_status, :delegates, :keepalive
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
@@ -118,6 +118,7 @@ module AgentXmpp
     #.........................................................................................................
     def connection_completed
       self.init_connection
+      @keepalive = EventMachine::Timer.new(60){send_data("\n")}
       self.broadcast_to_delegates(:did_connect, self)
     end
 
@@ -129,7 +130,12 @@ module AgentXmpp
 
     #.........................................................................................................
     def unbind
+      if @keepalive
+        @keepalive.cancel
+        @keepalive = nil
+      end
       @connection_status = :off_line
+      self.broadcast_to_delegates(:did_disconnect, self)
     end
 
     #---------------------------------------------------------------------------------------------------------
