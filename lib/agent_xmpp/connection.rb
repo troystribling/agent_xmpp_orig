@@ -118,7 +118,10 @@ module AgentXmpp
     #.........................................................................................................
     def connection_completed
       self.init_connection
-      @keepalive = EventMachine::Timer.new(60){send_data("\n")}
+      @keepalive = EventMachine::PeriodicTimer.new(60) do 
+        AgentXmpp::logger.info "KEEP ALIVE PING"
+        send_data("\n")
+      end
       self.broadcast_to_delegates(:did_connect, self)
     end
 
