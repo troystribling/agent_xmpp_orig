@@ -6,7 +6,7 @@ require 'optparse'
 require 'agent_xmpp'
 
 #---------------------------------------------------------------------------------------------------------
-config_file = 'config.yml'
+config_file = 'config/agent.yml'
 log_file = STDOUT
 OptionParser.new do |opts|
   opts.banner = 'Usage: agent_xmpp.rb -f config.yml'

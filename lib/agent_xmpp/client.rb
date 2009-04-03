@@ -111,13 +111,13 @@ module AgentXmpp
     end
 
     #.........................................................................................................
-    def did_receive_unsubscribe_request(client_connection, presence)
+    def did_receive_unsubscribed_request(client_connection, presence)
       from_jid = presence.from.to_s     
       if self.roster.delete(presence.from.bare.to_s )           
         client_connection.remove_contact(presence.from)  
-        AgentXmpp::logger.info "RECEIVED UNSUBSCRIBE REQUEST: #{from_jid}"
+        AgentXmpp::logger.info "RECEIVED UNSUBSCRIBED REQUEST: #{from_jid}"
       else
-        AgentXmpp::logger.warn "RECEIVED UNSUBSCRIBE REQUEST FROM JID NOT IN CONTACT LIST: #{from_jid}"        
+        AgentXmpp::logger.warn "RECEIVED UNSUBSCRIBED REQUEST FROM JID NOT IN CONTACT LIST: #{from_jid}"        
       end
     end
 

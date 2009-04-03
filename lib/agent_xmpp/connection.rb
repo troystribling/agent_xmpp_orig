@@ -260,7 +260,7 @@ module AgentXmpp
         self.broadcast_to_delegates(:did_receive_subscribe_request, self, stanza)
       #### presence unsubscribe 
       elsif stanza.type == :unsubscribed and stanza_class.eql?('Jabber::Presence')
-        self.broadcast_to_delegates(:did_receive_unsubscribe_request, self, stanza)
+        self.broadcast_to_delegates(:did_receive_unsubscribed_request, self, stanza)
       #### client version request
       elsif stanza.type == :get and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
         self.broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
