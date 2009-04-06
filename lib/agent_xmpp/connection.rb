@@ -145,6 +145,7 @@ module AgentXmpp
     # AgentXmpp::Parser callbacks
     #.........................................................................................................
     def receive(stanza)
+      
       if stanza.kind_of?(Jabber::XMPPStanza) and stanza.id and blk = @id_callbacks[stanza.id]
         @id_callbacks.delete(stanza.id)
         blk.call(stanza)
@@ -182,7 +183,7 @@ module AgentXmpp
           self.broadcast_to_delegates(:did_not_authenticate, self, stanza)
         end
       else
-        self.do_broadcast(stanza)
+        self.do_broadcast_to_delegates(stanza)
       end
             
     end
@@ -243,7 +244,7 @@ module AgentXmpp
     end
 
     #.........................................................................................................
-    def do_broadcast(stanza)
+    def do_broadcast_to_delegates(stanza)
       stanza_class = stanza.class.to_s
       #### roster update
       if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
@@ -264,6 +265,8 @@ module AgentXmpp
       #### client version request
       elsif stanza.type == :get and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
         self.broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
+      elsif stanza.type == :set and stanza.query.kind_of?(Jabber::RPC::IqQueryRPC)
+        self.broadcast_to_delegates(:did_receive_rpc_method_call, self, stanza)
       else
         method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)

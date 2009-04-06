@@ -8,6 +8,7 @@ require 'rubygems'
 require 'xmpp4r'
 require 'xmpp4r/roster'
 require 'xmpp4r/version'
+require 'xmpp4r/rpc/iq/rpc'
 
 require 'eventmachine'
 require 'evma_xmlpushparser'

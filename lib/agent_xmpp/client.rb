@@ -186,6 +186,14 @@ module AgentXmpp
       AgentXmpp::logger.info "RECEIVED CLIENT VERSION REQUEST: #{request.from.to_s}"
     end
 
+    #.........................................................................................................
+    # xml rpc
+    #.........................................................................................................
+    def did_receive_rpc_method_call(client_connection, stanza)
+p stanza.query.methods.sort
+      AgentXmpp::logger.info "RECEIVED RPC: #{stanza.from.to_s}, "
+    end
+
   ############################################################################################################
   # Client
   end
