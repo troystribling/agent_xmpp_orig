@@ -4,6 +4,7 @@
 $:.unshift 'lib'
 require 'optparse'
 require 'agent_xmpp'
+require 'find'
 
 #---------------------------------------------------------------------------------------------------------
 config_file = 'config/agent.yml'
@@ -18,6 +19,13 @@ OptionParser.new do |opts|
     exit
   }
   opts.parse!(ARGV)
+end
+
+#---------------------------------------------------------------------------------------------------------
+Find.find('app/controllers') do |path|
+  unless FileTest.directory?(path)
+    require path
+  end
 end
 
 #---------------------------------------------------------------------------------------------------------

@@ -114,6 +114,13 @@ module AgentXmpp
     end
 
     #---------------------------------------------------------------------------------------------------------
+    # process commands
+    #.........................................................................................................
+    def process_command(stanza)
+      AgentXmpp::logger.info "RECEIVED COMAAND: #{stanza.command.node}, FROM: #{stanza.from.to_s}, "
+    end
+
+    #---------------------------------------------------------------------------------------------------------
     # EventMachine::Connection callbacks
     #.........................................................................................................
     def connection_completed
@@ -265,8 +272,8 @@ module AgentXmpp
       #### client version request
       elsif stanza.type == :get and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
         self.broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
-      elsif stanza.type == :set and stanza.query.kind_of?(Jabber::RPC::IqQueryRPC)
-        self.broadcast_to_delegates(:did_receive_rpc_method_call, self, stanza)
+      elsif stanza.type == :set and stanza.command.kind_of?(Jabber::Command::IqCommand)
+        self.process_command(stanza)
       else
         method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)
