@@ -9,47 +9,51 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :params
+    attr_reader
     #---------------------------------------------------------------------------------------------------------
  
     #.........................................................................................................
-    def initialize(xmlns, params)
-p xmlns      
-      @format = Format.new(xmlns)
-      @params = params
+    def initialize
     end
  
     #---------------------------------------------------------------------------------------------------------
     # actions
     #.........................................................................................................
     def execute
-      AgentXmpp::logger.info "AgentXmpp::Controller\#execute"
+      AgentXmpp::logger.info "ACTION: AgentXmpp::Controller\#execute"
     end
 
     #.........................................................................................................
     def prev
-      AgentXmpp::logger.info "AgentXmpp::Controller\#prev"
+      AgentXmpp::logger.info "ACTION: AgentXmpp::Controller\#prev"
     end
 
     #.........................................................................................................
     def next
-      AgentXmpp::logger.info "AgentXmpp::Controller\#next"
+      AgentXmpp::logger.info "ACTION: AgentXmpp::Controller\#next"
     end
     
     #.........................................................................................................
     def complete
-      AgentXmpp::logger.info "AgentXmpp::Controller\#complete"
+      AgentXmpp::logger.info "ACTION: AgentXmpp::Controller\#complete"
     end
 
     #.........................................................................................................
     def cancel
-      AgentXmpp::logger.info "AgentXmpp::Controller\#cancel"
+      AgentXmpp::logger.info "ACTION: AgentXmpp::Controller\#cancel"
     end
     
     #---------------------------------------------------------------------------------------------------------
-    # call view
+    # handle request
     #.........................................................................................................
-    def respond_to
+    def handle_request(action, xmlns, params)
+      format = Format.new(xmlns)
+      self.send(action)
+      self.set_deferred_status(:succeeded, format)
+    end
+
+    def respond_to(&blk)
+      self.callback(&blk)
     end
     
     

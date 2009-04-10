@@ -119,7 +119,7 @@ module AgentXmpp
     def process_command(stanza)
       command = stanza.command
       controller_class = eval(command.node.classify + 'Controller')
-      controller_class.new(command.x.namespace, nil).send(command.action)
+      controller_class.new.handle_request(command.action, command.x.namespace, nil)
       AgentXmpp::logger.info "RECEIVED COMAAND: #{command.node}, FROM: #{stanza.from.to_s}, "
     end
 
