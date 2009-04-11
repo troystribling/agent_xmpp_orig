@@ -2,40 +2,39 @@
 module AgentXmpp
   
   ############################################################################################################
-  class Format
+  class Helper
 
     #---------------------------------------------------------------------------------------------------------
-    attr_accessor :xmlns
+    attr_reader :format
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(xmlns)
-      @xmlns = xmlns
+    def initialize(format)
+      @format = format
     end
-
+    
     #.........................................................................................................
-    def data(&blk)
-      call_block_for_xmlns('jabber:x:data', &blk)
+    def data_array_of_hashes(array_of_hashes)
+      p array_of_hashes
     end
-
-    #.........................................................................................................
-    def json(&blk)
-      call_block_for_xmlns('jabber:x:jason', &blk)
-    end
-
+     
   private
   
-    #.........................................................................................................
-    def call_block_for_xmlns(check_xmlns, &blk)
-      if self.xmlns.eql?(check_xmlns)
-        if blk
-          blk.call
-        end
-      end
-    end
-  
+     #.........................................................................................................
+     def add_container(payload)
+       container_type = /jabber:x:(.*)/.match(self.format.xmlns).to_a.last + '_container'
+       self.self(container_type.to_sym, payload)
+     end
+ 
+     #.........................................................................................................
+     def data_container(payload)
+       # iq = Jabber::Iq.new(:result, request.from.to_s)
+       # iq.id = request.id unless request.id.nil?
+       # iq.query = Jabber::Version::IqQueryVersion.new       
+     end
+      
   ############################################################################################################
-  # Format
+  # Helper
   end
 
 ##############################################################################################################

@@ -5,13 +5,9 @@ module AgentXmpp
   class Controller
 
     #---------------------------------------------------------------------------------------------------------
-    include EventMachine::Deferrable
+    attr_reader :format, :params
     #---------------------------------------------------------------------------------------------------------
 
-    #---------------------------------------------------------------------------------------------------------
-    attr_reader
-    #---------------------------------------------------------------------------------------------------------
- 
     #.........................................................................................................
     def initialize
     end
@@ -47,13 +43,23 @@ module AgentXmpp
     # handle request
     #.........................................................................................................
     def handle_request(action, xmlns, params)
-      format = Format.new(xmlns)
+      @format = Format.new(xmlns)
+      @params = params
       self.send(action)
-      self.set_deferred_status(:succeeded, format)
     end
 
+    #.........................................................................................................
+    def result_for(&blk)
+      @result_for_blk = blk
+    end
+
+    #.........................................................................................................
     def respond_to(&blk)
-      self.callback(&blk)
+      Helper.send(:define_method, :respond_to, &blk)
+      Helper.send(:define_method, :result_callback) do |result|
+        data = self.respond_to(result)        
+      end
+      EventMachine.defer(@result_for_blk, Helper.new(self.format).method(:result_callback).to_proc)
     end
     
     
