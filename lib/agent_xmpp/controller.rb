@@ -1,11 +1,11 @@
 ##############################################################################################################
 module AgentXmpp
   
-  ############################################################################################################
+  #####-------------------------------------------------------------------------------------------------------
   class Controller
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :format, :params
+    attr_reader :format, :params, :connection
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
@@ -42,10 +42,11 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
     # handle request
     #.........................................................................................................
-    def handle_request(action, xmlns, params)
-      @format = Format.new(xmlns)
+    def handle_request(connection, params)
       @params = params
-      self.send(action)
+      @connection = connection
+      @format = Format.new(params[:xmlns])
+      self.send(params[:action])
     end
 
     #.........................................................................................................
@@ -55,19 +56,17 @@ module AgentXmpp
 
     #.........................................................................................................
     def respond_to(&blk)
-      Helper.send(:define_method, :respond_to, &blk)
-      Helper.send(:define_method, :result_callback) do |result|
-        data = self.respond_to(result)        
+      View.send(:define_method, :respond_to, &blk)
+      View.send(:define_method, :result_callback) do |result|
+        self.connection.send(self.add_payload_to_container(self.respond_to(result)))
       end
-      EventMachine.defer(@result_for_blk, Helper.new(self.format).method(:result_callback).to_proc)
+      EventMachine.defer(@result_for_blk, View.new(self.connection, self.format, self.params).method(:result_callback).to_proc)
     end
     
     
-  ############################################################################################################
-  # Controller
+  #### Controller
   end
 
-##############################################################################################################
-# AgentXmpp
+#### AgentXmpp
 end
 

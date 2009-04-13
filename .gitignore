@@ -1,4 +1,4 @@
 *.tmproj
 .DS_Store
 .svn
-config.yml
+*.yml

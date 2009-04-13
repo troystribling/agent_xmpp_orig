@@ -1,10 +1,10 @@
 ##############################################################################################################
 module AgentXmpp
   
-  ############################################################################################################
+  #####-------------------------------------------------------------------------------------------------------
   class NotConnected < Exception; end
 
-  ############################################################################################################
+  #####-------------------------------------------------------------------------------------------------------
   class Connection < EventMachine::Connection
 
     #---------------------------------------------------------------------------------------------------------
@@ -118,9 +118,11 @@ module AgentXmpp
     #.........................................................................................................
     def process_command(stanza)
       command = stanza.command
+      params = {:xmlns => command.x.namespace, :action => command.action, :to => stanza.from.to_s, 
+        :from => stanza.from.to_s, :node => command.node, :id => stanza.id}
       controller_class = eval(command.node.classify + 'Controller')
-      controller_class.new.handle_request(command.action, command.x.namespace, nil)
-      AgentXmpp::logger.info "RECEIVED COMAAND: #{command.node}, FROM: #{stanza.from.to_s}, "
+      controller_class.new.handle_request(self, params)
+      AgentXmpp::logger.info "RECEIVED COMMAND: #{command.node}, FROM: #{stanza.from.to_s}, "
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -288,10 +290,8 @@ module AgentXmpp
       self.delegates.each{|d| d.send(method, *args) if d.respond_to?(method)}
     end
 
-  ############################################################################################################
-  # Connection
+  #### Connection
   end
 
-##############################################################################################################
-# AgentXmpp
+#### AgentXmpp
 end

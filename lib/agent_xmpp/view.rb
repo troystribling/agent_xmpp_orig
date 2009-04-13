@@ -2,39 +2,40 @@
 module AgentXmpp
   
   #####-------------------------------------------------------------------------------------------------------
-  class Format
+  class View
 
     #---------------------------------------------------------------------------------------------------------
-    attr_accessor :xmlns
+    attr_reader :connection, :format, :params
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(xmlns)
-      @xmlns = xmlns
+    def initialize(connection, format, params)
+      @connection = connection
+      @format = format
+      @params = params
     end
-
+           
     #.........................................................................................................
-    def x_data(&blk)
-      call_block_for_xmlns('jabber:x:data', &blk)
-    end
-
-    #.........................................................................................................
-    def json(&blk)
-      call_block_for_xmlns('jabber:x:json', &blk)
+    def add_payload_to_container(payload)
+      container_type = 'add_'+ /jabber:x:(.*)/.match(self.format.xmlns).to_a.last + '_to_container'
+      container_type = case self.format.xmlns
+        when 'jabber:x:data' : :add_x_data_to_container
+      end
+      container_type.nil? ? nil : self.send(container_type, payload)
     end
 
   private
-  
+ 
     #.........................................................................................................
-    def call_block_for_xmlns(check_xmlns, &blk)
-      if self.xmlns.eql?(check_xmlns)
-        if blk
-          blk.call
-        end
-      end
+    def add_x_data_to_container(payload)
+      iq = Jabber::Iq.new(:result, self.params[:from])
+      iq.id = self.params[:id] unless self.params[:id].nil?
+      iq.command = Jabber::Command::IqCommand.new(self.params[:node], 'completed')
+      iq.command << payload
+      iq      
     end
-  
-  #### Format
+      
+  #### View
   end
 
 #### AgentXmpp
