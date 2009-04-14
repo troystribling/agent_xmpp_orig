@@ -19,6 +19,10 @@ module AgentXmpp
                 fields.each {|var, value| item.add_field_with_value(var, value)}
                 data << item
               end
+            else
+              field = Jabber::Dataforms::XDataField.new
+              field.values = self.map {|v| v.to_s}
+              data << field
             end
             data
           end
