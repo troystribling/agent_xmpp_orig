@@ -4,7 +4,7 @@ class SystemController < AgentXmpp::Controller
   #.........................................................................................................
   def uptime
     result_for do
-      "hey" 
+      SystemCommands.uptime 
     end
     respond_to do |result|
       format.x_data do 
