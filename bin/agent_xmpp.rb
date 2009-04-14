@@ -26,11 +26,16 @@ OptionParser.new do |opts|
 end
 
 ####------------------------------------------------------------------------------------------------------
-Find.find('app/controllers') do |path|
-  unless FileTest.directory?(path)
-    require path
+def load(path)
+  Find.find(path) do |file_path|
+    if file = /(.*)\.rb$/.match(file_path)
+      require file.to_a.last
+    end
   end
 end
+
+load('app/controllers')
+load('config')
 
 ####------------------------------------------------------------------------------------------------------
 config = File.open(config_file) {|yf| YAML::load(yf)}

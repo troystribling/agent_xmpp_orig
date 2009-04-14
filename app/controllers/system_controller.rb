@@ -1,8 +1,8 @@
 ############################################################################################################
-class UptimeController < AgentXmpp::Controller
+class SystemController < AgentXmpp::Controller
 
   #.........................................................................................................
-  def execute
+  def uptime
     result_for do
       "hey" 
     end
@@ -11,7 +11,7 @@ class UptimeController < AgentXmpp::Controller
         result.to_x_data
       end
     end
-    AgentXmpp::logger.info "ACTION: AgentLinux::UptimeController\#execute"
+    AgentXmpp::logger.info "ACTION: AgentLinux::SystemController\#uptime"
   end
   
 ############################################################################################################

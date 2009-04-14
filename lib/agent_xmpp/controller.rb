@@ -42,11 +42,11 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
     # handle request
     #.........................................................................................................
-    def handle_request(connection, params)
+    def handle_request(connection, action, params)
       @params = params
       @connection = connection
       @format = Format.new(params[:xmlns])
-      self.send(params[:action])
+      self.send(action)
     end
 
     #.........................................................................................................
