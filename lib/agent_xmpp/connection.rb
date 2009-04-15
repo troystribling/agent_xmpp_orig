@@ -120,8 +120,18 @@ module AgentXmpp
       command = stanza.command
       params = {:xmlns => command.x.namespace, :action => command.action, :to => stanza.from.to_s, 
         :from => stanza.from.to_s, :node => command.node, :id => stanza.id, :fields => {}}
-      Routing::Routes.invoke(self, params)
-      AgentXmpp::logger.info "RECEIVED COMMAND: #{command.node}, FROM: #{stanza.from.to_s}, "
+      Routing::Routes.invoke_command_response(self, params)
+      AgentXmpp::logger.info "RECEIVED COMMAND: #{command.node}, FROM: #{stanza.from.to_s}"
+    end
+
+    #---------------------------------------------------------------------------------------------------------
+    # process messages
+    #.........................................................................................................
+    def process_chat_message_body(stanza)
+      params = {:xmlns => 'message:chat', :to => stanza.from.to_s, :from => stanza.from.to_s, :id => stanza.id, 
+        :body => stanza.body}
+      Routing::Routes.invoke_chat_message_body_response(self, params)
+      AgentXmpp::logger.info "RECEIVED MESSAGE BODY: #{stanza.body}"
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -194,7 +204,7 @@ module AgentXmpp
           self.broadcast_to_delegates(:did_not_authenticate, self, stanza)
         end
       else
-        self.do_broadcast_to_delegates(stanza)
+        self.demux_channel(stanza)
       end
             
     end
@@ -255,7 +265,7 @@ module AgentXmpp
     end
 
     #.........................................................................................................
-    def do_broadcast_to_delegates(stanza)
+    def demux_channel(stanza)
       stanza_class = stanza.class.to_s
       #### roster update
       if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
@@ -268,16 +278,18 @@ module AgentXmpp
           self.broadcast_to_delegates(method, self, i) unless method.nil?
         end
       #### presence subscription request  
-      elsif stanza.type == :subscribe and stanza_class.eql?('Jabber::Presence')
+      elsif stanza.type.eql?(:subscribe) and stanza_class.eql?('Jabber::Presence')
         self.broadcast_to_delegates(:did_receive_subscribe_request, self, stanza)
       #### presence unsubscribe 
-      elsif stanza.type == :unsubscribed and stanza_class.eql?('Jabber::Presence')
+      elsif stanza.type.eql?(:unsubscribed) and stanza_class.eql?('Jabber::Presence')
         self.broadcast_to_delegates(:did_receive_unsubscribed_request, self, stanza)
       #### client version request
-      elsif stanza.type == :get and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
+      elsif stanza.type.eql?(:get) and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
         self.broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
-      elsif stanza.type == :set and stanza.command.kind_of?(Jabber::Command::IqCommand)
+      elsif stanza.type.eql?(:set) and stanza.command.kind_of?(Jabber::Command::IqCommand)
         self.process_command(stanza)
+      elsif stanza_class.eql?('Jabber::Message') and stanza.type.eql?(:chat) and stanza.respond_to?(:body)
+        self.process_chat_message_body(stanza)
       else
         method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
         self.broadcast_to_delegates(method, self, stanza)

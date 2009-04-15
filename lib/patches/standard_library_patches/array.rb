@@ -12,11 +12,11 @@ module AgentXmpp
             data = Jabber::Dataforms::XData.new(type)
             reported = Jabber::Dataforms::XDataReported.new
             if self.first.instance_of?(Hash)
-              self.first.each_key {|var| reported.add_field(var)}
+              self.first.each_key {|var| reported.add_field(var.to_s)}
               data << reported
               self.each do |fields|
                 item = Jabber::Dataforms::XDataItem.new
-                fields.each {|var, value| item.add_field_with_value(var, value)}
+                fields.each {|var, value| item.add_field_with_value(var.to_s, value.to_s)}
                 data << item
               end
             else

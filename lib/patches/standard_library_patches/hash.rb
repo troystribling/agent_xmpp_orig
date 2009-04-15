@@ -10,7 +10,7 @@ module AgentXmpp
           #.......................................................................................................
           def to_x_data(type = 'result')
             data = Jabber::Dataforms::XData.new(type)
-            self.each {|var, value| data.add_field_with_value(var, value)}
+            self.each {|var, value| data.add_field_with_value(var.to_s, value.to_s)}
             data
           end
 
@@ -28,4 +28,4 @@ module AgentXmpp
 end
 
 ##############################################################################################################
-Array.send(:include, AgentXmpp::StandardLibrary::Patches::Hash::InstanceMethods)
+Hash.send(:include, AgentXmpp::StandardLibrary::Patches::Hash::InstanceMethods)

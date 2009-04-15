@@ -20,6 +20,7 @@ module AgentXmpp
       container_type = 'add_'+ /jabber:x:(.*)/.match(self.format.xmlns).to_a.last + '_to_container'
       container_type = case self.format.xmlns
         when 'jabber:x:data' : :add_x_data_to_container
+        when 'message:chat'  : :add_chat_message_body_container
       end
       container_type.nil? ? nil : self.send(container_type, payload)
     end
@@ -33,6 +34,13 @@ module AgentXmpp
       iq.command = Jabber::Command::IqCommand.new(self.params[:node], 'completed')
       iq.command << payload
       iq      
+    end
+
+    #.........................................................................................................
+    def add_chat_message_body_container(payload)
+      message = Jabber::Message.new(self.params[:from], payload)
+      message.type = :chat
+      message      
     end
       
   #### View

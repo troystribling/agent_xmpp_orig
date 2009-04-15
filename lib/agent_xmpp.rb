@@ -14,7 +14,7 @@ require 'xmpp4r/version'
 require 'xmpp4r/dataforms'
 require 'xmpp4r/command/iq/command'
 
-require 'xmpp4r_patches'
+require 'patches'
 
 require 'agent_xmpp/parser'
 require 'agent_xmpp/connection'
@@ -26,3 +26,4 @@ require 'agent_xmpp/view'
 require 'agent_xmpp/controller'
 require 'agent_xmpp/map'
 require 'agent_xmpp/routes'
+require 'agent_xmpp/chat_message_body_controller'
