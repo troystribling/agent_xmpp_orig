@@ -35,7 +35,7 @@ module AgentXmpp
 
         #.......................................................................................................
         def invoke_chat_message_body_response(connection, params)
-          route = self.map[route_path] || {:controller => params[:node], :action => params[:action]}
+          route = self.map.chat_message_body_route
           begin
             controller_class = eval("#{route[:controller].classify}Controller")
           rescue ArgumentError

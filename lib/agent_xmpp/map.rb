@@ -9,7 +9,7 @@ module AgentXmpp
     class Map
 
       #.........................................................................................................
-      attr_reader :message_body_route
+      attr_reader :chat_message_body_route
       #.........................................................................................................
 
       #.........................................................................................................
@@ -23,17 +23,17 @@ module AgentXmpp
         path.strip!; path.gsub!(/^\//,'')
         path_elements = path.split('/')
         raise RoutingConnection, "Inavild route connection: #{path}." if path_elements.count < 2 
-        self.send("#{type}_command".to_sym, {:controller => route[:controller] || path[0], :action => route[:action] || path[1]})
+        @routes[path] = {:controller => options[:controller] || path_elements[0], :action => options[:action] || path_elements[1]}
       end
 
       #.........................................................................................................
       def [](path)
-        @command_routes[key]
+        @routes[path]
       end
 
       #.........................................................................................................
-      def connect_message_body(route)
-        @message_body_route = {:controller => route[:controller], :action => route[:action]}
+      def connect_chat_message_body(route)
+        @chat_message_body_route = {:controller => route[:controller], :action => route[:action]}
       end
      
     private

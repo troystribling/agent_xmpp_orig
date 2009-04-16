@@ -17,7 +17,6 @@ module AgentXmpp
            
     #.........................................................................................................
     def add_payload_to_container(payload)
-      container_type = 'add_'+ /jabber:x:(.*)/.match(self.format.xmlns).to_a.last + '_to_container'
       container_type = case self.format.xmlns
         when 'jabber:x:data' : :add_x_data_to_container
         when 'message:chat'  : :add_chat_message_body_container

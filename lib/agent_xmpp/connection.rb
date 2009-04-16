@@ -118,10 +118,12 @@ module AgentXmpp
     #.........................................................................................................
     def process_command(stanza)
       command = stanza.command
-      params = {:xmlns => command.x.namespace, :action => command.action, :to => stanza.from.to_s, 
-        :from => stanza.from.to_s, :node => command.node, :id => stanza.id, :fields => {}}
-      Routing::Routes.invoke_command_response(self, params)
-      AgentXmpp::logger.info "RECEIVED COMMAND: #{command.node}, FROM: #{stanza.from.to_s}"
+      unless command.x.nil? 
+        params = {:xmlns => command.x.namespace, :action => command.action, :to => stanza.from.to_s, 
+          :from => stanza.from.to_s, :node => command.node, :id => stanza.id, :fields => {}}
+        Routing::Routes.invoke_command_response(self, params)
+        AgentXmpp::logger.info "RECEIVED COMMAND: #{command.node}, FROM: #{stanza.from.to_s}"
+      end
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -286,8 +288,10 @@ module AgentXmpp
       #### client version request
       elsif stanza.type.eql?(:get) and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
         self.broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
+      #### received command
       elsif stanza.type.eql?(:set) and stanza.command.kind_of?(Jabber::Command::IqCommand)
         self.process_command(stanza)
+      #### chat message received
       elsif stanza_class.eql?('Jabber::Message') and stanza.type.eql?(:chat) and stanza.respond_to?(:body)
         self.process_chat_message_body(stanza)
       else
