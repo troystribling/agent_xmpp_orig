@@ -7,7 +7,7 @@ class SystemCommands
     #.........................................................................................................
     def uptime
       result = `uptime`.strip.gsub(/,/,'').gsub(/:\s/,' ').split(/\s+/)
-      {:uptime => result[2], :active_users => result[3], :load_avaerage => "#{result[7]}, #{result[8]}, #{result[9]}"}
+      {:uptime => result[2], :active_users => result[3], :load_average => "#{result[7]}, #{result[8]}, #{result[9]}"}
     end
 
   end
