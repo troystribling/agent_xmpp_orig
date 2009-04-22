@@ -13,6 +13,19 @@ class SystemController < AgentXmpp::Controller
     end
     AgentXmpp::logger.info "ACTION: AgentLinux::SystemController\#uptime"
   end
+
+  #.........................................................................................................
+  def file_system_usage
+    result_for do
+      SystemCommands.file_system_usage 
+    end
+    respond_to do |result|
+      format.x_data do 
+        result.to_x_data
+      end
+    end
+    AgentXmpp::logger.info "ACTION: AgentLinux::SystemController\#file_system_usage"
+  end
   
 ############################################################################################################
 # UptimeController

@@ -1,38 +1,35 @@
 ##############################################################################################################
 module AgentXmpp  
   module StandardLibrary
-    module Patches
-      module Array
+    module ArrayPatches
     
-        ####----------------------------------------------------------------------------------------------------
-        module InstanceMethods
+      ####----------------------------------------------------------------------------------------------------
+      module InstanceMethods
 
-          #......................................................................................................
-          def to_x_data(type = 'result')
-            data = Jabber::Dataforms::XData.new(type)
-            reported = Jabber::Dataforms::XDataReported.new
-            if self.first.instance_of?(Hash)
-              self.first.each_key {|var| reported.add_field(var.to_s)}
-              data << reported
-              self.each do |fields|
-                item = Jabber::Dataforms::XDataItem.new
-                fields.each {|var, value| item.add_field_with_value(var.to_s, value.to_s)}
-                data << item
-              end
-            else
-              field = Jabber::Dataforms::XDataField.new
-              field.values = self.map {|v| v.to_s}
-              data << field
+        #......................................................................................................
+        def to_x_data(type = 'result')
+          data = Jabber::Dataforms::XData.new(type)
+          reported = Jabber::Dataforms::XDataReported.new
+          if self.first.instance_of?(Hash)
+            self.first.each_key {|var| reported.add_field(var.to_s)}
+            data << reported
+            self.each do |fields|
+              item = Jabber::Dataforms::XDataItem.new
+              fields.each {|var, value| item.add_field_with_value(var.to_s, value.to_s)}
+              data << item
             end
-            data
+          else
+            field = Jabber::Dataforms::XDataField.new
+            field.values = self.map {|v| v.to_s}
+            data << field
           end
-          
-        #### InstanceMethods
-        end  
+          data
+        end
         
-      ##### Array
-      end
-    #### Patches
+      #### InstanceMethods
+      end  
+        
+    #### ArrayPatches
     end
   ##### StandardLibrary
   end
@@ -40,4 +37,4 @@ module AgentXmpp
 end
 
 ##############################################################################################################
-Array.send(:include, AgentXmpp::StandardLibrary::Patches::Array::InstanceMethods)
+Array.send(:include, AgentXmpp::StandardLibrary::ArrayPatches::InstanceMethods)

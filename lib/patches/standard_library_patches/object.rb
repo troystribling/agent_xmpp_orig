@@ -1,25 +1,22 @@
 ##############################################################################################################
 module AgentXmpp  
   module StandardLibrary
-    module Patches
-      module Object
+    module ObjectPatches
     
-        ####----------------------------------------------------------------------------------------------------
-        module InstanceMethods
+      ####----------------------------------------------------------------------------------------------------
+      module InstanceMethods
 
-          #.......................................................................................................
-          def to_x_data(type = 'result')
-            data = Jabber::Dataforms::XData.new(type)
-            data.add_field_with_value(nil, self.to_s)
-            data
-          end
-    
-        #### InstanceMethods
-        end  
+        #.......................................................................................................
+        def to_x_data(type = 'result')
+          data = Jabber::Dataforms::XData.new(type)
+          data.add_field_with_value(nil, self.to_s)
+          data
+        end
+  
+      #### InstanceMethods
+      end  
         
-      ##### Object
-      end
-    #### Patches
+    #### ObjectPatches
     end
   ##### StandardLibrary
   end
@@ -27,4 +24,4 @@ module AgentXmpp
 end
 
 ##############################################################################################################
-Object.send(:include, AgentXmpp::StandardLibrary::Patches::Object::InstanceMethods)
+Object.send(:include, AgentXmpp::StandardLibrary::ObjectPatches::InstanceMethods)
