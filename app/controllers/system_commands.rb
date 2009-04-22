@@ -12,7 +12,8 @@ class SystemCommands
 
     #.........................................................................................................
     def file_system_usage
-      ['hfs', 'ext3', 'ext', 'ext2'].select{|fst| `df -T`.include?(fst)}.inject([]) do |result, fst|
+      fs_type_result = `df -T`
+      ['hfs', 'ext3', 'ext', 'ext2'].select{|fst| fs_type_result.include?(fst)}.inject([]) do |result, fst|
         `df --type=#{fst} -H`.split("\n")[1..-1].each do |row|
           vals = row.split(/\s+/)
           result.push({:mount => vals[5..-1].join(" "), :size => vals[1], :used => vals[4]})

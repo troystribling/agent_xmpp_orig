@@ -20,6 +20,7 @@ class SystemController < AgentXmpp::Controller
       SystemCommands.file_system_usage 
     end
     respond_to do |result|
+p result      
       format.x_data do 
         result.to_x_data
       end

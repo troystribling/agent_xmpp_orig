@@ -30,7 +30,7 @@ module AgentXmpp
     #.........................................................................................................
     def respond_to(&blk)
       View.send(:define_method, :respond_to, &blk)
-      View.send(:define_method, :result_callback) do |result|
+      View.send(:define_method, :result_callback) do |*result|
         self.connection.send(self.add_payload_to_container(self.respond_to(result)))
       end
       EventMachine.defer(@result_for_blk, View.new(self.connection, self.format, self.params).method(:result_callback).to_proc)
