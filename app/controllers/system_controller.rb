@@ -8,7 +8,7 @@ class SystemController < AgentXmpp::Controller
     end
     respond_to do |result|
       format.x_data do 
-        result.to_x_data
+        result.first.to_x_data
       end
     end
     AgentXmpp::logger.info "ACTION: AgentLinux::SystemController\#uptime"
@@ -20,7 +20,6 @@ class SystemController < AgentXmpp::Controller
       SystemCommands.file_system_usage 
     end
     respond_to do |result|
-p result      
       format.x_data do 
         result.to_x_data
       end

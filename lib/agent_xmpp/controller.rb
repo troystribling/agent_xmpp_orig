@@ -35,8 +35,7 @@ module AgentXmpp
       end
       EventMachine.defer(@result_for_blk, View.new(self.connection, self.format, self.params).method(:result_callback).to_proc)
     end
-    
-    
+        
   #### Controller
   end
 
