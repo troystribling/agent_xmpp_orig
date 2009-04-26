@@ -4,14 +4,20 @@ Simple XMPP client built on EventMachine.
 
 to install and run
 
-sudo gem install eventmachine
-sudo gem install xmpp4r
-sudo gem install activesupport
+	 sudo gem install eventmachine
+	 sudo gem install xmpp4r
+	 sudo gem install activesupport
 
-cd vendor/eventmachine_xmlpushparser
-rake gem
-sudo gem install pkg/eventmachine_xmlpushparser-0.0.1.gem
+	cd vendor/eventmachine_xmlpushparser
+	rake gem
+	sudo gem install pkg/eventmachine_xmlpushparser-0.0.1.gem
 
-cd ../../
-bin/agent_xmpp.rb
+	cd ../../
+	bin/agent_xmpp.rb
 
+Place a file called agent.yml in config that has the following format
+
+jid: agent@somewhere.com
+password: password
+contacts:
+    - you@somewhere.com
