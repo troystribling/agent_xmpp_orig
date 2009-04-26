@@ -18,6 +18,8 @@ class SystemCommands
           vals = row.split(/\s+/)
           result.push({:mount => vals[5..-1].join(" "), :size => vals[1], :used => vals[4]})
         end
+        # TODO: not sure what is going on single element arrays are packed into another array while multielement arrays
+        #       are not. it was screwing up construction of xmpp message
         result.count.eql?(1) ? result.first : result
       end
     end
