@@ -8,9 +8,7 @@ module AgentXmpp
 
         #.......................................................................................................
         def to_x_data(type = 'result')
-          data = Jabber::Dataforms::XData.new(type)
-          self.each {|var, value| data.add_field_with_value(var.to_s, value.to_s)}
-          data
+          self.inject(Jabber::Dataforms::XData.new(type)) {|data, field| data.add_field_with_value(field[0].to_s, field[1].to_s); data}
         end
 
         
