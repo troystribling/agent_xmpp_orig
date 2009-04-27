@@ -38,5 +38,5 @@ load('config')
 
 ####------------------------------------------------------------------------------------------------------
 config = File.open(config_file) {|yf| YAML::load(yf)}
-AgentXMPP::logger = Logger.new(log_file, 10, 1024000) unless log_file.eql?(STDOUT)
+AgentXmpp::logger = Logger.new(log_file, 10, 1024000) unless log_file.eql?(STDOUT)
 AgentXmpp::Client.new(config).connect
