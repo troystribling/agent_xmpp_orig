@@ -10,7 +10,7 @@ class SystemCommands
       time_stamp = result[0].split('up')
       users = /(\d+)/.match(result[1]).to_a.last
       load_average = /(\d+\.\d+)/.match(result[2]).to_a.last + ", #{result[3]}, #{result[4]}"
-      {:curret_time => time_stamp[0].strip, :uptime => time_stamp[1].strip, :active_users => users.strip, :load_average => load_average.strip}
+      {:current_time => time_stamp[0].strip, :uptime => time_stamp[1].strip, :active_users => users.strip, :load_average => load_average.strip}
     end
 
     #.........................................................................................................
