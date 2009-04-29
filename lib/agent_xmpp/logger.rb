@@ -1,37 +1,24 @@
 ##############################################################################################################
 module AgentXmpp
   
-  #---------------------------------------------------------------------------------------------------------
-  @@debug = false
-  #---------------------------------------------------------------------------------------------------------
-
   #.........................................................................................................
-  def AgentXmpp::logger
+  def self.logger
     @@logger ||= Logger.new($stdout)
   end
 
   #.........................................................................................................
-  def AgentXmpp::logger=(logger)
+  def self.logger=(logger)    
     @@logger = logger
   end
 
   #.........................................................................................................
-  def AgentXmpp::debug=(debug)
-    @@debug = debug
-    if @@debug
-      debuglog('Debugging mode enabled.')
-    end
+  def self.info(msg)
+    self.logger.info "I, [#{Time.now.to_s}] INFO -- #{AgentXmpp::AGENT_XMPP_NAME}: #{msg}"
   end
 
   #.........................................................................................................
-  def AgentXmpp::debug
-    @@debug
-  end
-
-  #.........................................................................................................
-  def AgentXmpp::debuglog(string)
-    return if not @@debug
-    logger.debug(string)
+  def self.warn(msg)
+    self.logger.warn "W, [#{Time.now.to_s}] WARN -- #{AgentXmpp::AGENT_XMPP_NAME}: #{msg}"
   end
 
 #### AgentXmpp

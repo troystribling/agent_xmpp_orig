@@ -9,7 +9,7 @@ class ChatMessageBodyController < AgentXmpp::Controller
     respond_to do |result|
       result.to_s
     end
-    AgentXmpp::logger.info "ACTION: ChatMessageBodyController\#body"
+    AgentXmpp::info "ACTION: ChatMessageBodyController\#body"
   end
   
 ############################################################################################################
