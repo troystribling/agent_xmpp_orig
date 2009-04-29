@@ -12,12 +12,12 @@ module AgentXmpp
   end
 
   #.........................................................................................................
-  def self.info(msg)
+  def self.log_info(msg)
     self.logger.info "I, [#{Time.now.to_s} ##{Process.pid}] INFO -- #{AgentXmpp::AGENT_XMPP_NAME}: #{msg}"
   end
 
   #.........................................................................................................
-  def self.warn(msg)
+  def self.log_warn(msg)
     self.logger.warn "W, [#{Time.now.to_s} ##{Process.pid}] WARN -- #{AgentXmpp::AGENT_XMPP_NAME}: #{msg}"
   end
 

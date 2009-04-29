@@ -1,17 +1,19 @@
 ############################################################################################################
-class ChatMessageBodyController < AgentXmpp::Controller
+class PerformanceController < AgentXmpp::Controller
 
   #.........................................................................................................
-  def body
+  def stats_summary
     result_for do
-      params[:body].reverse
+      PerformanceCommands.uptime 
     end
     respond_to do |result|
-      result.to_s
+      format.x_data do 
+        result.first.to_x_data
+      end
     end
-    AgentXmpp::log_info "ACTION: ChatMessageBodyController\#body"
+    AgentXmpp::log_info "ACTION: AgentLinux::SystemController\#uptime"
   end
   
 ############################################################################################################
-# ChatMessageBodyController
+# UptimeController
 end
