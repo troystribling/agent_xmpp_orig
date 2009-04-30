@@ -47,6 +47,33 @@ module AgentXmpp
     end
 
     #---------------------------------------------------------------------------------------------------------
+    # EventMachine::Connection callbacks
+    #.........................................................................................................
+    def connection_completed
+      self.init_connection
+      @keepalive = EventMachine::PeriodicTimer.new(60) do 
+        send_data("\n")
+      end
+      self.broadcast_to_delegates(:did_connect, self)
+    end
+
+    #.........................................................................................................
+    def receive_data(data)
+      AgentXmpp::log_info "RECV: #{data.to_s}"
+      super(data)
+    end
+
+    #.........................................................................................................
+    def unbind
+      if @keepalive
+        @keepalive.cancel
+        @keepalive = nil
+      end
+      @connection_status = :off_line
+      self.broadcast_to_delegates(:did_disconnect, self)
+    end
+
+    #---------------------------------------------------------------------------------------------------------
     # service discovery
     #.........................................................................................................
     def get_client_version(contact_jid)
@@ -137,33 +164,6 @@ module AgentXmpp
     end
 
     #---------------------------------------------------------------------------------------------------------
-    # EventMachine::Connection callbacks
-    #.........................................................................................................
-    def connection_completed
-      self.init_connection
-      @keepalive = EventMachine::PeriodicTimer.new(60) do 
-        send_data("\n")
-      end
-      self.broadcast_to_delegates(:did_connect, self)
-    end
-
-    #.........................................................................................................
-    def receive_data(data)
-      AgentXmpp::log_info "RECV: #{data.to_s}"
-      super(data)
-    end
-
-    #.........................................................................................................
-    def unbind
-      if @keepalive
-        @keepalive.cancel
-        @keepalive = nil
-      end
-      @connection_status = :off_line
-      self.broadcast_to_delegates(:did_disconnect, self)
-    end
-
-    #---------------------------------------------------------------------------------------------------------
     # AgentXmpp::Parser callbacks
     #.........................................................................................................
     def receive(stanza)
@@ -214,6 +214,8 @@ module AgentXmpp
     protected
     #---------------------------------------------------------------------------------------------------------
   
+    #---------------------------------------------------------------------------------------------------------
+    # Process XMPP messages
     #.........................................................................................................
     def authenticate
       begin

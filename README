@@ -6,7 +6,8 @@ to install and run
 
 	 sudo gem install eventmachine
 	 sudo gem install xmpp4r
-	 sudo gem install activesupport
+     sudo gem install do_sqlite3
+	 sudo gem install datamapper
 
 	cd vendor/eventmachine_xmlpushparser
 	rake gem

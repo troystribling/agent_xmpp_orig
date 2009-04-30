@@ -35,9 +35,7 @@ module AgentXmpp
       def connect_chat_message_body(route)
         @chat_message_body_route = {:controller => route[:controller], :action => route[:action]}
       end
-     
-    private
-    
+         
     #### Map
     end
 
