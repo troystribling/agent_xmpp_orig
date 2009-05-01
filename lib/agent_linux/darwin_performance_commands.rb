@@ -6,7 +6,7 @@ class DarwinPerformanceCommands
     
     #.........................................................................................................
     def cpu_stats
-      AgentXmpp::log_info "DarwinPerformanceCommands::cpu_stats"
+      AgentXmpp.log_info "DarwinPerformanceCommands.cpu_stats"
     end
       
   ###------------------------------------------------------------------------------------------------------

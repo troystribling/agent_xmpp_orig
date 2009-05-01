@@ -14,7 +14,7 @@ module AgentXmpp
         end
   
         #.......................................................................................................
-        def meta_define_method(name, &blk)
+        def define_meta_class_method(name, &blk)
           (class << self; self; end).instance_eval {define_method(name, &blk)}
         end
   

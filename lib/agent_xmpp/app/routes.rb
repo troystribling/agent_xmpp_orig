@@ -30,7 +30,7 @@ module AgentXmpp
             begin
               controller_class = eval("#{route[:controller].classify}Controller")
             rescue ArgumentError
-              AgentXmpp::logger.error "ROUTING ERROR: #{params[:node].classify}Controller inavlid for node:#{params[:node]} action:#{params[:action]}."
+              AgentXmpp.logger.error "ROUTING ERROR: #{params[:node].classify}Controller inavlid for node:#{params[:node]} action:#{params[:action]}."
             else          
               controller_class.new.handle_request(connection, route[:action], params)
             end
@@ -43,7 +43,7 @@ module AgentXmpp
           begin
             controller_class = eval("#{route[:controller].classify}Controller")
           rescue ArgumentError
-            AgentXmpp::logger.error "ROUTING ERROR: #{params[:node].classify}Controller inavlid for node:#{params[:node]} action:#{params[:action]}."
+            AgentXmpp.logger.error "ROUTING ERROR: #{params[:node].classify}Controller inavlid for node:#{params[:node]} action:#{params[:action]}."
           else          
             controller_class.new.handle_request(connection, route[:action], params)
           end

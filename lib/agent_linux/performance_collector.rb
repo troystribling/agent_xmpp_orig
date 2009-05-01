@@ -6,22 +6,23 @@ class PerformanceCollector
     
     #.........................................................................................................
     def did_connect(client_connection)
-      AgentXmpp::log_info "PerformanceCollector::did_connect"
+      AgentXmpp.log_info "PerformanceCollector.did_connect"
     end
 
     #.........................................................................................................
     def collect(period)
-      lambda do
+      collector = lambda do
         while true
           self.cpu_stats
           sleep(period)
         end
       end
+      EventMachine.defer(collector)
     end
 
     #.........................................................................................................
     def cpu_stats
-      AgentXmpp::log_info "PerformanceCollector::cpu_stats"
+      AgentXmpp.log_info "PerformanceCollector.cpu_stats"
     end
 
     #.........................................................................................................

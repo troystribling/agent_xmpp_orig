@@ -11,7 +11,7 @@ class PerformanceController < AgentXmpp::Controller
         result.first.to_x_data
       end
     end
-    AgentXmpp::log_info "ACTION: AgentLinux::SystemController\#uptime"
+    AgentXmpp.log_info "ACTION: AgentLinux.SystemController\#uptime"
   end
   
 ############################################################################################################

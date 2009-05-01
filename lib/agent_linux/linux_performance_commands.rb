@@ -6,7 +6,7 @@ module LinuxPerformanceCommands
     
     #.........................................................................................................
     def cpu_stats
-      AgentXmpp::log_info "LinuxPerformanceCommands::cpu_stats"
+      AgentXmpp.log_info "LinuxPerformanceCommands.cpu_stats"
     end
 
   ###------------------------------------------------------------------------------------------------------
