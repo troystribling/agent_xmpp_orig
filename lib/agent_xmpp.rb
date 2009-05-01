@@ -16,17 +16,6 @@ require 'datamapper'
 
 require 'patches'
 
-require 'agent_xmpp/client/parser'
-require 'agent_xmpp/client/connection'
-require 'agent_xmpp/client/client'
-
-require 'agent_xmpp/utils/roster'
-require 'agent_xmpp/utils/logger'
-
-require 'agent_xmpp/app/format'
-require 'agent_xmpp/app/boot'
-require 'agent_xmpp/app/view'
-require 'agent_xmpp/app/controller'
-require 'agent_xmpp/app/map'
-require 'agent_xmpp/app/routes'
-require 'agent_xmpp/app/chat_message_body_controller'
+require 'agent_xmpp/app'
+require 'agent_xmpp/client'
+require 'agent_xmpp/utils'

@@ -9,7 +9,7 @@ module AgentXmpp
 
       #.......................................................................................................
       def on_boot(&blk)
-         self.meta_define_method(:load_app_config, &blk)
+         self.meta_define_method(:load_on_boot, &blk)
       end
     
     end

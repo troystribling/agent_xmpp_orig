@@ -23,7 +23,7 @@ module AgentXmpp
         @connection = EventMachine.connect(self.jid.domain, self.port, Connection, self.jid, 
           self.password, self.port)
         self.connection.add_delegate(self)
-        AgentXmpp::Boot::load_app_config(self) if AgentXmpp::Boot.respond_to?(:load_app_config)
+        AgentXmpp::Boot::load_on_boot(self) if AgentXmpp::Boot.respond_to?(:load_on_boot)
       end
     end
 
