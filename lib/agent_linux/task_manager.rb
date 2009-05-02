@@ -1,8 +1,13 @@
 ############################################################################################################
-class PerformanceCollector
+class TaskManager
 
   ####------------------------------------------------------------------------------------------------------
   class << self
+    
+    #.........................................................................................................
+    def performace_collector
+      @@performace_collector
+    end
     
     #.........................................................................................................
     def did_connect(client_connection)
@@ -10,26 +15,28 @@ class PerformanceCollector
     end
 
     #.........................................................................................................
-    def collect(period)
+    def performance_collection(period)
+      @@performace_collector = self.periodic_task(period) do 
+        self.performance_commands_class.cpu_stats(period)
+      end
+    end
+
+    #.........................................................................................................
+    def performance_commands_class
+      @@command_class ||= eval("#{`uname -s`.chop}PerformanceCommands")
+    end
+    
+    #.........................................................................................................
+    def periodic_task(period)
       collector = lambda do
         while true
-          self.cpu_stats
+          yield
           sleep(period)
         end
       end
       EventMachine.defer(collector)
     end
-
-    #.........................................................................................................
-    def cpu_stats
-      AgentXmpp.log_info "PerformanceCollector.cpu_stats"
-    end
-
-    #.........................................................................................................
-    def command_class
-      @@command_class ||= eval("#{`uname -s`}PerformanceCommands")
-    end
-    
+  
   ###------------------------------------------------------------------------------------------------------
   end
    

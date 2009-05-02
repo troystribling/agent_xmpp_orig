@@ -10,5 +10,6 @@ class PerformanceMonitor
   property :monitor,    String
   property :class,      String
   property :value,      Float
+  property :time_stamp, DateTime
 
 end
