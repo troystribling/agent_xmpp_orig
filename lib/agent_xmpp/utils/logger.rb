@@ -20,7 +20,7 @@ module AgentXmpp
     end
 
     #.........................................................................................................
-    def og_warn(msg)
+    def log_warn(msg)
       logger.warn msg
     end
   

@@ -8,34 +8,27 @@ class DarwinCommands
   class << self
     
     #.........................................................................................................
-    def cpu_stats(period)
-      @@cpu_stats_start ||= Time.now - period
-      @@cpu_stats_start = sar_query("sar -u", @@cpu_stats_start) do |stats|
+    def cpu_stats(config)
+      sar_query("sar -u", config) do |stats|
         p stats
       end
-p @@cpu_stats_start      
       AgentXmpp.log_info "DarwinCommands.cpu_stats"
     end
 
     #.........................................................................................................
-    def sar_query(cmd, query_start)
-      query_end = Time.now
-p query_start
-p query_end      
+    def sar_query(cmd, config)
+      query_end = Time.now - config[:lag] || 0
+      query_start = query_end - config[:period]
       stat_rows = `#{cmd}`.split("\n")[3..-2]
       unless stat_rows.nil? 
         stats = stat_rows.collect{|s| s.split(/\s+/)}.select do |p| 
           ((Time.parse(p[0]) <=> query_start) > -1) and ((query_end <=> Time.parse(p[0])) > -1)
         end
-p stats        
         unless stats.empty?
           yield stats
-          query_end
         else
-          query_start
         end
       else
-        query_start
       end
     end
       

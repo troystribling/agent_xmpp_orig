@@ -19,8 +19,9 @@ AgentXmpp::Boot.after_connection_completed do |connection|
 
   connection.add_delegate(TaskManager)
   
-  TaskManager.performance_collection(60)
+  TaskManager.performance_collection({:period => 10, :lag => 20})
+  TaskManager.reaper(30)
 
-  AgentXmpp.log_info "AgentXmpp::BootApp::connection_completed"
+  AgentXmpp.log_info "AgentXmpp::BootApp::after_connection_completed"
 
 end
