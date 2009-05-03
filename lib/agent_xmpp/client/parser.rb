@@ -34,7 +34,7 @@ module AgentXmpp
       if @current.parent
         @current = @current.parent
       else
-        self.process
+        process
         @current = nil
       end
     end
@@ -60,7 +60,7 @@ module AgentXmpp
       if @current.xpath.eql?('stream:stream')
         @streamns = @current.namespace('') if @current.namespace('')
       end
-      self.receive(stanza) if self.respond_to?(:receive)
+      receive(stanza) if respond_to?(:receive)
     end
    
   #### Parser

@@ -8,7 +8,7 @@ module AgentXmpp
 
         #......................................................................................................
         def classify
-          self.split('_').collect{|s| s.capitalize}.join
+          split('_').collect{|s| s.capitalize}.join
         end
         
       #### InstanceMethods

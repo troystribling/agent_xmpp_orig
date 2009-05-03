@@ -20,31 +20,29 @@ module AgentXmpp
     #.........................................................................................................
     def connect
       EventMachine.run do
-        @connection = EventMachine.connect(self.jid.domain, self.port, Connection, self.jid, 
-          self.password, self.port)
-        self.connection.add_delegate(self)
-        AgentXmpp::Boot.load_on_boot(self) if AgentXmpp::Boot.respond_to?(:load_on_boot)
+        @connection = EventMachine.connect(jid.domain, port, Connection, self, jid, 
+          password, port)
       end
     end
 
     #.........................................................................................................
     def reconnect
-      self.connection.reconnect
+      connection.reconnect
     end
 
     #.........................................................................................................
     def connected?
-      self.connection and !self.connection.error?
+      connection and !connection.error?
     end
 
     #.........................................................................................................
     def add_delegate(delegate)
-      self.connection.add_delegate(delegate)
+      connection.add_delegate(delegate)
     end
 
     #.........................................................................................................
     def remove_delegate(delegate)
-      self.connection.remove_delegate(delegate)
+      connection.remove_delegate(delegate)
     end
     
     #---------------------------------------------------------------------------------------------------------
@@ -89,9 +87,9 @@ module AgentXmpp
     def did_receive_presence(client_connection, presence)
       from_jid = presence.from.to_s     
       from_bare_jid = presence.from.bare.to_s     
-      if self.roster.has_key?(from_bare_jid) 
-        self.roster[from_bare_jid.to_s][:resources][from_jid] = {} if self.roster[from_bare_jid.to_s][:resources][from_jid].nil?
-        self.roster[from_bare_jid.to_s][:resources][from_jid][:presence] = presence
+      if roster.has_key?(from_bare_jid) 
+        roster[from_bare_jid.to_s][:resources][from_jid] = {} if roster[from_bare_jid.to_s][:resources][from_jid].nil?
+        roster[from_bare_jid.to_s][:resources][from_jid][:presence] = presence
         client_connection.get_client_version(from_jid) if not from_jid.eql?(client_connection.jid.to_s) and presence.type.nil?
         AgentXmpp.log_info "RECEIVED PRESENCE FROM: #{from_jid}"
       else
@@ -102,7 +100,7 @@ module AgentXmpp
     #.........................................................................................................
     def did_receive_subscribe_request(client_connection, presence)
       from_jid = presence.from.to_s     
-      if self.roster.has_key?(presence.from.bare.to_s ) 
+      if roster.has_key?(presence.from.bare.to_s ) 
         client_connection.accept_contact_request(from_jid)  
         AgentXmpp.log_info "RECEIVED SUBSCRIBE REQUEST: #{from_jid}"
       else
@@ -114,7 +112,7 @@ module AgentXmpp
     #.........................................................................................................
     def did_receive_unsubscribed_request(client_connection, presence)
       from_jid = presence.from.to_s     
-      if self.roster.delete(presence.from.bare.to_s )           
+      if roster.delete(presence.from.bare.to_s )           
         client_connection.remove_contact(presence.from)  
         AgentXmpp.log_info "RECEIVED UNSUBSCRIBED REQUEST: #{from_jid}"
       else
@@ -128,9 +126,9 @@ module AgentXmpp
     def did_receive_roster_item(client_connection, roster_item)
       AgentXmpp.log_info "RECEIVED ROSTER ITEM"   
       roster_item_jid = roster_item.jid.to_s
-      if self.roster.has_key?(roster_item_jid) 
-        self.roster[roster_item_jid][:activated] = true 
-        self.roster[roster_item_jid][:roster_item] = roster_item 
+      if roster.has_key?(roster_item_jid) 
+        roster[roster_item_jid][:activated] = true 
+        roster[roster_item_jid][:roster_item] = roster_item 
         AgentXmpp.log_info "ACTIVATING CONTACT: #{roster_item_jid}"   
       else
         client_connection.remove_contact(roster_item.jid)  
@@ -142,8 +140,8 @@ module AgentXmpp
     def did_remove_roster_item(client_connection, roster_item)
       AgentXmpp.log_info "REMOVE ROSTER ITEM"   
       roster_item_jid = roster_item.jid.to_s
-      if self.roster.has_key?(roster_item_jid) 
-        self.roster.delete(roster_item_jid) 
+      if roster.has_key?(roster_item_jid) 
+        roster.delete(roster_item_jid) 
         AgentXmpp.log_info "REMOVED CONTACT: #{roster_item_jid}"   
       end
     end
@@ -151,7 +149,7 @@ module AgentXmpp
     #.........................................................................................................
     def did_receive_all_roster_items(client_connection)
       AgentXmpp.log_info "RECEIVED ALL ROSTER ITEMS"   
-      self.roster.select{|j,r| not r[:activated]}.each do |j,r|
+      roster.select{|j,r| not r[:activated]}.each do |j,r|
         AgentXmpp.log_info "ADDING CONTACT: #{j}" 
         client_connection.add_contact(Jabber::JID.new(j))  
       end
@@ -176,8 +174,8 @@ module AgentXmpp
     # service discovery management
     #.........................................................................................................
     def did_receive_client_version_result(client_connection, from, version)
-      self.roster[from.bare.to_s][:resources][from.to_s][:version] = version \
-        unless self.roster[from.bare.to_s][:resources][from.to_s].nil?
+      roster[from.bare.to_s][:resources][from.to_s][:version] = version \
+        unless roster[from.bare.to_s][:resources][from.to_s].nil?
       AgentXmpp.log_info "RECEIVED CLIENT VERSION RESULT: #{from.to_s}, #{version.iname}, #{version.version}"
     end
 

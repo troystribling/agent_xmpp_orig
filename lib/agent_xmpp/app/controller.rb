@@ -19,7 +19,7 @@ module AgentXmpp
       @params = params
       @connection = connection
       @format = Format.new(params[:xmlns])
-      self.send(action)
+      send(action)
     end
 
     #.........................................................................................................
@@ -31,9 +31,9 @@ module AgentXmpp
     def respond_to(&blk)
       View.send(:define_method, :respond_to, &blk)
       View.send(:define_method, :result_callback) do |*result|
-        self.connection.send(self.add_payload_to_container(self.respond_to(result)))
+        connection.send(add_payload_to_container(respond_to(result)))
       end
-      EventMachine.defer(@result_for_blk, View.new(self.connection, self.format, self.params).method(:result_callback).to_proc)
+      EventMachine.defer(@result_for_blk, View.new(connection, format, params).method(:result_callback).to_proc)
     end
         
   #### Controller

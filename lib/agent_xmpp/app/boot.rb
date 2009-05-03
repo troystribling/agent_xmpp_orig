@@ -8,8 +8,18 @@ module AgentXmpp
     class << self
 
       #.......................................................................................................
-      def on_boot(&blk)
-         self.define_meta_class_method(:load_on_boot, &blk)
+      def after_connection_completed(&blk)
+         define_meta_class_method(:call_after_connection_completed, &blk)
+      end
+
+      #.......................................................................................................
+      def before_app_load(&blk)
+         define_meta_class_method(:call_before_app_load, &blk)
+      end
+
+      #.......................................................................................................
+      def after_app_load(&blk)
+         define_meta_class_method(:call_after_app_load, &blk)
       end
     
     end

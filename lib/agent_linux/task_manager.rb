@@ -11,19 +11,19 @@ class TaskManager
     
     #.........................................................................................................
     def did_connect(client_connection)
-      AgentXmpp.log_info "PerformanceCollector.did_connect"
+      AgentXmpp.log_info "TaskManager.did_connect"
     end
 
     #.........................................................................................................
     def performance_collection(period)
-      @@performace_collector = self.periodic_task(period) do 
-        self.performance_commands_class.cpu_stats(period)
+      @@performace_collector = periodic_task(period) do 
+        commands_class.cpu_stats(period)
       end
     end
 
     #.........................................................................................................
-    def performance_commands_class
-      @@command_class ||= eval("#{`uname -s`.chop}PerformanceCommands")
+    def commands_class
+      @@command_class ||= eval("#{`uname -s`.chop}Commands")
     end
     
     #.........................................................................................................

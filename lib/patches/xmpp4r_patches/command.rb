@@ -9,7 +9,7 @@ module AgentXmpp
 
           #.....................................................................................................
           def <<(child)
-            self.add(child)
+            add(child)
           end
     
         #### InstanceMethods

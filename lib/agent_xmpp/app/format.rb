@@ -27,7 +27,7 @@ module AgentXmpp
   
     #.........................................................................................................
     def call_block_for_xmlns(check_xmlns, &blk)
-      if self.xmlns.eql?(check_xmlns)
+      if xmlns.eql?(check_xmlns)
         if blk
           blk.call
         end

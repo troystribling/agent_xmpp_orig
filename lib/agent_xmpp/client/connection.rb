@@ -12,12 +12,12 @@ module AgentXmpp
     #---------------------------------------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------------------------------------
-    attr_reader :jid, :port, :password, :connection_status, :delegates, :keepalive
+    attr_reader :client, :jid, :port, :password, :connection_status, :delegates, :keepalive
     #---------------------------------------------------------------------------------------------------------
 
     #.........................................................................................................
-    def initialize(jid, password, port=5222)
-      @jid, @password, @port = jid, password, port
+    def initialize(client, jid, password, port=5222)
+      @client, @jid, @password, @port = client, jid, password, port
       @connection_status = :offline;
       @id_callbacks = {}
       @delegates = []
@@ -35,14 +35,14 @@ module AgentXmpp
     
     #.........................................................................................................
     def send(data, &blk)
-      raise NotConnected if self.error?
+      raise NotConnected if error?
       if block_given? and data.is_a? Jabber::XMPPStanza
         if data.id.nil?
           data.id = Jabber::IdGenerator.instance.generate_id
         end
         @id_callbacks[data.id] = blk
       end
-      self.send_data(data.to_s)
+      send_data(data.to_s)
       AgentXmpp.log_info "SEND: #{data.to_s}"
     end
 
@@ -50,11 +50,13 @@ module AgentXmpp
     # EventMachine::Connection callbacks
     #.........................................................................................................
     def connection_completed
-      self.init_connection
+      init_connection
       @keepalive = EventMachine::PeriodicTimer.new(60) do 
         send_data("\n")
       end
-      self.broadcast_to_delegates(:did_connect, self)
+      add_delegate(client)      
+      AgentXmpp::Boot.call_after_connection_completed(self) if AgentXmpp::Boot.respond_to?(:call_after_connection_completed)
+      broadcast_to_delegates(:did_connect, self)
     end
 
     #.........................................................................................................
@@ -70,7 +72,7 @@ module AgentXmpp
         @keepalive = nil
       end
       @connection_status = :off_line
-      self.broadcast_to_delegates(:did_disconnect, self)
+      broadcast_to_delegates(:did_disconnect, self)
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -79,9 +81,9 @@ module AgentXmpp
     def get_client_version(contact_jid)
       iq = Jabber::Iq.new(:get, contact_jid)
       iq.query = Jabber::Version::IqQueryVersion.new
-      self.send(iq) do |r|
+      send(iq) do |r|
         if (r.type == :result) && r.query.kind_of?(Jabber::Version::IqQueryVersion)
-          self.broadcast_to_delegates(:did_receive_client_version_result, self, r.from, r.query)
+          broadcast_to_delegates(:did_receive_client_version_result, self, r.from, r.query)
         end
       end
     end
@@ -92,17 +94,17 @@ module AgentXmpp
       iq.id = request.id unless request.id.nil?
       iq.query = Jabber::Version::IqQueryVersion.new
       iq.query.set_iname(AgentXmpp::AGENT_XMPP_NAME).set_version(AgentXmpp::AGENT_XMPP_VERSION).set_os(AgentXmpp::OS_VERSION)
-      self.send(iq)
+      send(iq)
     end
     
     #---------------------------------------------------------------------------------------------------------
     # roster management
     #.........................................................................................................
     def get_roster
-      self.send(Jabber::Iq.new_rosterget) do |r|
+      send(Jabber::Iq.new_rosterget) do |r|
         if r.type == :result and r.query.kind_of?(Jabber::Roster::IqQueryRoster)
-          r.query.each_element {|i|  self.broadcast_to_delegates(:did_receive_roster_item, self, i)}
-          self.broadcast_to_delegates(:did_receive_all_roster_items, self)
+          r.query.each_element {|i|  broadcast_to_delegates(:did_receive_roster_item, self, i)}
+          broadcast_to_delegates(:did_receive_all_roster_items, self)
         end
       end
     end
@@ -111,9 +113,9 @@ module AgentXmpp
     def add_contact(contact_jid)
       request = Jabber::Iq.new_rosterset
       request.query.add(Jabber::Roster::RosterItem.new(contact_jid))
-      self.send(request) do |r|
-        self.send(Jabber::Presence.new.set_type(:subscribe).set_to(contact_jid))
-        self.broadcast_to_delegates(:did_acknowledge_add_contact, self, r, contact_jid)
+      send(request) do |r|
+        send(Jabber::Presence.new.set_type(:subscribe).set_to(contact_jid))
+        broadcast_to_delegates(:did_acknowledge_add_contact, self, r, contact_jid)
       end
     end
 
@@ -121,8 +123,8 @@ module AgentXmpp
     def remove_contact(contact_jid)
       request = Jabber::Iq.new_rosterset
       request.query.add(Jabber::Roster::RosterItem.new(contact_jid, nil, :remove))
-      self.send(request) do |r|
-        self.broadcast_to_delegates(:did_remove_contact, self, r, contact_jid)
+      send(request) do |r|
+        broadcast_to_delegates(:did_remove_contact, self, r, contact_jid)
       end
     end
 
@@ -130,14 +132,14 @@ module AgentXmpp
     def accept_contact_request(contact_jid)
       presence = Jabber::Presence.new.set_type(:subscribed)
       presence.to = contact_jid      
-      self.send(presence)
+      send(presence)
     end
 
     #.........................................................................................................
     def reject_contact_request(contact_jid)
       presence = Jabber::Presence.new.set_type(:unsubscribed)
       presence.to = contact_jid      
-      self.send(presence)
+      send(presence)
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -185,27 +187,27 @@ module AgentXmpp
           end
         end
         if @connection_status.eql?(:offline)
-          self.authenticate
+          authenticate
         elsif @connection_status.eql?(:authenticated)
-          self.bind(stanza)
+          bind(stanza)
         end
       when 'stream:stream'
       when 'success'
-        case self.connection_status
+        case connection_status
         when :offline
-          self.reset_parser
-          self.init_connection(false)
+          reset_parser
+          init_connection(false)
           @connection_status = :authenticated
         end
         return
       when 'failure'
-        case self.connection_status
+        case connection_status
         when :offline
-          self.reset_parser
-          self.broadcast_to_delegates(:did_not_authenticate, self, stanza)
+          reset_parser
+          broadcast_to_delegates(:did_not_authenticate, self, stanza)
         end
       else
-        self.demux_channel(stanza)
+        demux_channel(stanza)
       end
             
     end
@@ -219,7 +221,7 @@ module AgentXmpp
     #.........................................................................................................
     def authenticate
       begin
-          Jabber::SASL.new(self, 'PLAIN').auth(self.password)
+          Jabber::SASL.new(self, 'PLAIN').auth(password)
       rescue
         raise ClientAuthenticationFailure.new, $!.to_s
       end
@@ -227,18 +229,18 @@ module AgentXmpp
   
     #.........................................................................................................
     def bind(stanza)
-      if self.stream_features.has_key?('bind')
+      if stream_features.has_key?('bind')
         iq = Jabber::Iq.new(:set)
         bind = iq.add(REXML::Element.new('bind'))
-        bind.add_namespace(self.stream_features['bind'])                
+        bind.add_namespace(stream_features['bind'])                
         resource = bind.add REXML::Element.new('resource')
-        resource.text = self.jid.resource
-        self.send(iq) do |r|
+        resource.text = jid.resource
+        send(iq) do |r|
           if r.type == :result and full_jid = r.first_element('//jid') and full_jid.text
             @connection_status = :bind
-            self.jid = Jabber::JID.new(full_jid.text) unless self.jid.to_s.eql?(full_jid.text)      
-            self.broadcast_to_delegates(:did_bind, self, stanza)
-            self.session(stanza)
+            jid = Jabber::JID.new(full_jid.text) unless jid.to_s.eql?(full_jid.text)      
+            broadcast_to_delegates(:did_bind, self, stanza)
+            session(stanza)
           end
         end
       end                
@@ -246,16 +248,16 @@ module AgentXmpp
     
     #.........................................................................................................
     def session(stanza)
-      if self.stream_features.has_key?('session')
+      if stream_features.has_key?('session')
         iq = Jabber::Iq.new(:set)
         session = iq.add REXML::Element.new('session')
-        session.add_namespace self.stream_features['session']                
-        self.send(iq) do |r|
+        session.add_namespace stream_features['session']                
+        send(iq) do |r|
           if r.type == :result                
             @connection_status = :active
-            self.broadcast_to_delegates(:did_authenticate, self, stanza)
-            self.send(Jabber::Presence.new(nil, nil, 1))
-            self.get_roster
+            broadcast_to_delegates(:did_authenticate, self, stanza)
+            send(Jabber::Presence.new(nil, nil, 1))
+            get_roster
           end
         end
       end
@@ -263,8 +265,8 @@ module AgentXmpp
 
     #.........................................................................................................
     def init_connection(starting=true)
-      self.send("<?xml version='1.0' ?>") if starting
-      self.send("<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0' to='#{self.jid.domain}'>" )
+      send("<?xml version='1.0' ?>") if starting
+      send("<stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0' to='#{jid.domain}'>" )
     end
 
     #.........................................................................................................
@@ -278,32 +280,32 @@ module AgentXmpp
                     when :none   : :did_receive_roster_item
                     when :to     : :did_add_contact
                     end         
-          self.broadcast_to_delegates(method, self, i) unless method.nil?
+          broadcast_to_delegates(method, self, i) unless method.nil?
         end
       #### presence subscription request  
       elsif stanza.type.eql?(:subscribe) and stanza_class.eql?('Jabber::Presence')
-        self.broadcast_to_delegates(:did_receive_subscribe_request, self, stanza)
+        broadcast_to_delegates(:did_receive_subscribe_request, self, stanza)
       #### presence unsubscribe 
       elsif stanza.type.eql?(:unsubscribed) and stanza_class.eql?('Jabber::Presence')
-        self.broadcast_to_delegates(:did_receive_unsubscribed_request, self, stanza)
+        broadcast_to_delegates(:did_receive_unsubscribed_request, self, stanza)
       #### client version request
       elsif stanza.type.eql?(:get) and stanza.query.kind_of?(Jabber::Version::IqQueryVersion)
-        self.broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
+        broadcast_to_delegates(:did_receive_client_version_request, self, stanza)
       #### received command
       elsif stanza.type.eql?(:set) and stanza.command.kind_of?(Jabber::Command::IqCommand)
-        self.process_command(stanza)
+        process_command(stanza)
       #### chat message received
       elsif stanza_class.eql?('Jabber::Message') and stanza.type.eql?(:chat) and stanza.respond_to?(:body)
-        self.process_chat_message_body(stanza)
+        process_chat_message_body(stanza)
       else
         method = ('did_receive_' + /.*::(.*)/.match(stanza_class).to_a.last.downcase).to_sym
-        self.broadcast_to_delegates(method, self, stanza)
+        broadcast_to_delegates(method, self, stanza)
       end
     end
   
     #.........................................................................................................
     def broadcast_to_delegates(method, *args)
-      self.delegates.each{|d| d.send(method, *args) if d.respond_to?(method)}
+      delegates.each{|d| d.send(method, *args) if d.respond_to?(method)}
     end
 
   #### Connection

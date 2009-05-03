@@ -2,9 +2,12 @@
 class SystemController < AgentXmpp::Controller
 
   #.........................................................................................................
+  include SystemCommands
+
+  #.........................................................................................................
   def uptime
     result_for do
-      SystemCommands.uptime 
+      uptime 
     end
     respond_to do |result|
       format.x_data do 
@@ -17,7 +20,7 @@ class SystemController < AgentXmpp::Controller
   #.........................................................................................................
   def file_system_usage
     result_for do
-      SystemCommands.file_system_usage 
+      file_system_usage 
     end
     respond_to do |result|
       format.x_data do 
