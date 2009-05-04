@@ -1,3 +1,5 @@
+require 'find'
+
 ##############################################################################################################
 module AgentXmpp
 
@@ -25,6 +27,15 @@ module AgentXmpp
       #.......................................................................................................
       def after_app_load(&blk)
          define_meta_class_method(:call_after_app_load, &blk)
+      end
+    
+      ####------------------------------------------------------------------------------------------------------
+      def load(path)
+        Find.find(path) do |file_path|
+          if file = /(.*)\.rb$/.match(file_path)
+            require file.to_a.last
+          end
+        end
       end
     
     end

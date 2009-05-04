@@ -1,13 +1,11 @@
 #!/usr/bin/env ruby
 
 ####------------------------------------------------------------------------------------------------------
-$:.unshift 'lib/patches'
 $:.unshift 'lib'
 
 ####------------------------------------------------------------------------------------------------------
 require 'optparse'
 require 'agent_xmpp'
-require 'find'
 
 ####------------------------------------------------------------------------------------------------------
 config_file = 'config/agent.yml'
@@ -25,22 +23,14 @@ OptionParser.new do |opts|
 end
 
 ####------------------------------------------------------------------------------------------------------
-def load(path)
-  Find.find(path) do |file_path|
-    if file = /(.*)\.rb$/.match(file_path)
-      require file.to_a.last
-    end
-  end
-end
-
-load('config')
+AgentXmpp::Boot.load('config')
 
 ####------------------------------------------------------------------------------------------------------
 AgentXmpp::Boot.call_before_app_load if AgentXmpp::Boot.respond_to?(:call_before_app_load)
 
 ####------------------------------------------------------------------------------------------------------
-load('app/models')
-load('app/controllers')
+AgentXmpp::Boot.load('app/models')
+AgentXmpp::Boot.load('app/controllers')
 
 ####------------------------------------------------------------------------------------------------------
 AgentXmpp::Boot.call_after_app_load if AgentXmpp::Boot.respond_to?(:call_after_app_load)

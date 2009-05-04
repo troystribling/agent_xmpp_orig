@@ -10,7 +10,6 @@ class LinuxPerformance
         monitor_class = "cpu"
         ["user", "nice", "system", "iowait", "steal", "idle"].inject(3) do |i, m|
           PerformanceMonitor.new(:monitor => m, :value => stats[i], :monitor_class => monitor_class, :created_at => created_at).save
-          puts "#{m}, #{stats[i]}, #{created_at} #{monitor_class}"
           i += 1
         end
       end

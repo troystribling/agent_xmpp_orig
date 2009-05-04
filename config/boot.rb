@@ -11,7 +11,6 @@ end
 AgentXmpp::Boot.after_app_load do
 
   DataMapper.setup(:default, "sqlite3://#{app_dir}/db/agent_linux.db")
-  DataMapper.auto_migrate!  
   AgentXmpp.log_info "AgentXmpp::BootApp.after_app_load"
   
 end

@@ -1,14 +1,14 @@
-require 'rake'
-require "rake/clean"
-
 $:.unshift 'lib'
+require 'rake'
+require 'rake/clean'
+require 'agent_xmpp'
 
 ##############################################################################
 # OPTIONS
 ##############################################################################
 
 PKG_NAME      = 'agent_xmpp'
-PKG_VERSION   = AgentXMPP::AGENT_XMPP_VERSION
+PKG_VERSION   = AgentXmpp::AGENT_XMPP_VERSION
 AUTHORS       = ['Troy Stribling']
 EMAIL         = "troy.stribling@gmail.com"
 HOMEPAGE      = "http://"
@@ -44,66 +44,55 @@ PKG_FILES     = %w(Rakefile) + RDOC_FILES + Dir["{lib,test,data,tools}/**/*"]
 task :default => [:test]
 
 ##############################################################################
+# DATABASE TASKS
+##############################################################################
+namespace :db do
+  desc "create database tables"
+  task :migrate do
+    AgentXmpp::Boot.load('app/models')
+    DataMapper.setup(:default, "sqlite3://#{AgentXmpp::Boot.app_dir}/db/agent_linux.db")
+    DataMapper.auto_migrate!  
+  end
+end
+
+##############################################################################
 # TESTING TASKS
 ##############################################################################
 
-Rake::TestTask.new do |t|
-  # t.libs << "test"
-  # t.test_files = ['test/ts_xmpp4r.rb']
-end
+# Rake::TestTask.new do |t|
+#   t.libs << "test"
+#   t.test_files = ['test/ts_xmpp4r.rb']
+# end
 
 ##############################################################################
 # DOCUMENTATION TASKS
 ##############################################################################
 
-# RDOC
-#######
-Rake::RDocTask.new do |rd|
-
-  # # which dir should rdoc files be installed in?
-  # rd.rdoc_dir = 'rdoc'
-  # 
-  # # the full list of files to be included
-  # rd.rdoc_files.include(RDOC_FILES, "lib/**/*.rb")
-  # 
-  # # the full list of options that are common between gem build
-  # # and 'rake rdoc' build of docs.
-  # rd.options = RDOC_OPTIONS
-  # 
-  # # Devs Only : Uncomment to also document private methods in the rdocs
-  # # Please don't check this change in to the source repo.
-  # #rd.options << '--all'
-  # 
-  # # Devs Only : Uncomment to generate dot (graphviz) diagrams along with rdocs.
-  # # This requires that graphiz (dot) be installed as a local binary and on your path.
-  # # See : http://www.graphviz.org/
-  # # Please don't check this change in to the source repo as it introduces a binary dependency.
-  # #rd.options << '--diagram'
-  # #rd.options << '--fileboxes'
-
-end
-
-
-# RCOV
-#######
-
-# Conditional require rcov/rcovtask if present
-# begin
-#   require 'rcov/rcovtask'
+# Rake::RDocTask.new do |rd|
 # 
-#   Rcov::RcovTask.new do |t|
-#     t.test_files = ['test/ts_xmpp4r.rb']
-#     t.output_dir = "coverage"
-#   end
-# rescue LoadError
+#   # which dir should rdoc files be installed in?
+#   rd.rdoc_dir = 'rdoc'
+#   
+#   # the full list of files to be included
+#   rd.rdoc_files.include(RDOC_FILES, "lib/**/*.rb")
+#   
+#   # the full list of options that are common between gem build
+#   # and 'rake rdoc' build of docs.
+#   rd.options = RDOC_OPTIONS
+#   
+#   # Devs Only : Uncomment to also document private methods in the rdocs
+#   # Please don't check this change in to the source repo.
+#   #rd.options << '--all'
+#   
+#   # Devs Only : Uncomment to generate dot (graphviz) diagrams along with rdocs.
+#   # This requires that graphiz (dot) be installed as a local binary and on your path.
+#   # See : http://www.graphviz.org/
+#   # Please don't check this change in to the source repo as it introduces a binary dependency.
+#   #rd.options << '--diagram'
+#   #rd.options << '--fileboxes'
+# 
 # end
 
-# DOT GRAPH
-############
-# desc "Generate requires graph"
-# task :gen_requires_graph do
-#   sh %{cd tools; ./gen_requires.bash}
-# end
 
 ##############################################################################
 # SYNTAX CHECKING
