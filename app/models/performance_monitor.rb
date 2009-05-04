@@ -6,10 +6,10 @@ class PerformanceMonitor
   #---------------------------------------------------------------------------------------------------------
   
   #.........................................................................................................
-  property :id,         Serial
-  property :monitor,    String
-  property :class,      String
-  property :value,      Float
-  property :time_stamp, DateTime
+  property :id,                 Serial
+  property :monitor,            String
+  property :monitor_class,      String
+  property :value,              Float
+  property :created_at,         DateTime
 
 end

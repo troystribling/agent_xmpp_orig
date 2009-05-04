@@ -1,81 +1,75 @@
 ##############################################################################################################
 module AgentXmpp  
-  module XMPP4R
-    module Patches
-      module XData
+  module XMPP4RPatches
+    module XData
+  
+      ####----------------------------------------------------------------------------------------------------
+      module InstanceMethods
+
+        #.....................................................................................................
+        def <<(child)
+          add(child)
+        end
+
+        #.....................................................................................................
+        def add_field_with_value(var, value)
+          field = Jabber::Dataforms::XDataField.new(var)
+          field.value = value
+          self << field
+        end
     
-        ####----------------------------------------------------------------------------------------------------
-        module InstanceMethods
-
-          #.....................................................................................................
-          def <<(child)
-            add(child)
-          end
-
-          #.....................................................................................................
-          def add_field_with_value(var, value)
-            field = Jabber::Dataforms::XDataField.new(var)
-            field.value = value
-            self << field
-          end
-      
-        #### InstanceMethods
-        end   
-       
-      ##### XData
-      end
-    #### Patches
+      #### InstanceMethods
+      end   
+     
+    ##### XData
     end
-  ##### XMPP4R
+  ##### XMPP4RPatches
   end
 #### AgentXmpp
 end
 
 ##############################################################################################################
 module AgentXmpp  
-  module XMPP4R
-    module Patches
+  module XMPP4RPatches
       module XDataReported
     
-          ####----------------------------------------------------------------------------------------------------
-          module InstanceMethods
+        ####----------------------------------------------------------------------------------------------------
+        module InstanceMethods
 
-            #.....................................................................................................
-            def fields(including_hidden=false)
-              fields = []
-              each_element do |xe|
-                if xe.kind_of?(Jabber::Dataforms::XDataField) and (including_hidden or (xe.type != :hidden and xe.type != :fixed))
-                  fields << xe
-                end
+          #.....................................................................................................
+          def fields(including_hidden=false)
+            fields = []
+            each_element do |xe|
+              if xe.kind_of?(Jabber::Dataforms::XDataField) and (including_hidden or (xe.type != :hidden and xe.type != :fixed))
+                fields << xe
               end
-              fields
             end
+            fields
+          end
 
-            #.....................................................................................................
-            def <<(child)
-              add(child)
-            end
+          #.....................................................................................................
+          def <<(child)
+            add(child)
+          end
+    
+          #.....................................................................................................
+          def add_field(var)
+            self << Jabber::Dataforms::XDataField.new(var)
+          end
+    
+      #### InstanceMethods
+      end  
       
-            #.....................................................................................................
-            def add_field(var)
-              self << Jabber::Dataforms::XDataField.new(var)
-            end
-      
-        #### InstanceMethods
-        end  
-        
-      ##### XDataReported
-      end
-    #### Patches
+    ##### XDataReported
     end
-  ##### XMPP4R
+  ##### XMPP4RPatches
   end
 #### AgentXmpp
 end
 
 ##############################################################################################################
-Jabber::Dataforms::XData.send(:include, AgentXmpp::XMPP4R::Patches::XData::InstanceMethods)
-Jabber::Dataforms::XDataReported.send(:include, AgentXmpp::XMPP4R::Patches::XDataReported::InstanceMethods)
+Jabber::Dataforms::XData.send(:include, AgentXmpp::XMPP4RPatches::XData::InstanceMethods)
+Jabber::Dataforms::XDataReported.send(:include, AgentXmpp::XMPP4RPatches::XDataReported::InstanceMethods)
 
 ##############################################################################################################
 ##############################################################################################################
