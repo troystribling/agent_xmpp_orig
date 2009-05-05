@@ -9,7 +9,7 @@ class PerformanceMonitor
   property :id,                 Serial
   property :monitor,            String
   property :monitor_class,      String
-  property :value,              Float
+  property :value,              String
   property :created_at,         DateTime
 
 end
