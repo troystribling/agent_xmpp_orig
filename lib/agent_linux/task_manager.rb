@@ -10,6 +10,8 @@ class TaskManager
     def performance_collection(period)
       EventMachine::PeriodicTimer.new(period) do
         performance_class.cpu
+        performance_class.memory
+        performance_class.loadavg
       end
     end
  
