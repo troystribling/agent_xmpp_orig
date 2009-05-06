@@ -9,7 +9,7 @@ class TaskManager
     #.........................................................................................................
     def performance_collection(period)
       EventMachine::PeriodicTimer.new(period) do
-        performance_class.stat
+        performance_class.cpu
       end
     end
  
