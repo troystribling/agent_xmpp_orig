@@ -49,15 +49,25 @@ class LinuxProcFiles
     end
 
     #.......................................................................................................
+    def net_dev
+      LinuxCommands.cat("/proc/net/dev").select{|r| /eth\d/.match(r)}.collect do |r|
+        vals = r.strip.split(/\s+/)
+        {:if => vals[0].chomp(':'), 
+          :stat => {:recv_bytes => vals[1], :recv_packets => vals[2], :recv_errors => vals[3], :recv_drop => vals[4]
+                    :trans_bytes => vals[9], :trans_packets => vals[10], :trans_errrors => vals[11], :trans_drop => vals[12]}        
+      end
+    end
+
+    #.......................................................................................................
     def diskstats
       LinuxCommands.file_system_mount_to_device.inject([]) |stats, mount|
         stat_row = LinuxCommands.cat("/proc/diskstats").select {|row| /#{mount[:device].split("/").last}/.match(row)}.first
         unless stat_row.nil?
-          stat_vals = stat_row.split(/\s+/)
-          sector_size = LinuxCommands.sector_size
+          stat_vals = stat_row.strip.split(/\s+/)
+          sector_size = LinuxCommands.sector_size(mount[:device])
           stats.push({:mount => mount[:mount], 
-                      :stats => {:reads => stat_vals[4], :merged_reads => stat_vals[5], :kb_read=> stat_vals[6] * sector_size, :time_reading => stat_vals[7],
-                                 :writes => stat_vals[8], :kb_written=> stat_vals[9]  * sector_size, :time_writing => stat_vals[10]}})
+                      :stats => {:reads => stat_vals[3], :merged_reads => stat_vals[4], :kb_read=> stat_vals[5] * sector_size, :time_reading => stat_vals[6],
+                                 :writes => stat_vals[7], :kb_written=> stat_vals[8]  * sector_size, :time_writing => stat_vals[9]}})
         else
           stats
         end        

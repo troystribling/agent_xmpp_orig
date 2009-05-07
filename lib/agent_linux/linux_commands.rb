@@ -48,9 +48,8 @@ class LinuxCommands
     end
 
     #.........................................................................................................
-    def sector_size
-      sector_row = `fdisk -l -u`.split("\n").select{|r| /^Units/.match(r)}.first
-      /=\s(\d+)\s/.match(sector_row).to_a.last.to_f / 1024.0
+    def sector_size(device)
+      512.0 / 1024.0
     end
           
   ###------------------------------------------------------------------------------------------------------
