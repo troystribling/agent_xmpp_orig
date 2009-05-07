@@ -32,6 +32,27 @@ class LinuxCommands
       `getconf PAGESIZE`.chop.to_f
     end
     
+    #......................................................................................................
+    def cat(file_name)
+      `cat #{file_name}`.split("\n")
+    end  
+
+    #.........................................................................................................
+    def file_system_mount_to_device
+      fs_type_result = `df -T`
+      ['hfs', 'ext3', 'ext', 'ext2'].select{|fst| /\s#{fst}\s/.match(fs_type_result)}.inject([]) do |result, fst|
+        `df --type=#{fst} -H`.split("\n")[1..-1].each do |row|
+          vals = row.split(/\s+/)
+          result.push({:mount => vals[5..-1].join(" "), :device => vals[0]})
+      end
+    end
+
+    #.........................................................................................................
+    def sector_size
+      sector_row = `fdisk -l -u`.split("\n").select{|r| /^Units/.match(r)}.first
+      /=\s(\d+)\s/.match(sector_row).to_a.last.to_f / 1024.0
+    end
+          
   ###------------------------------------------------------------------------------------------------------
   end
          
