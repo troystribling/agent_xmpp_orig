@@ -9,10 +9,10 @@ class TaskManager
     #.........................................................................................................
     def performance_collection(period)
       EventMachine::PeriodicTimer.new(period) do
-        performance_class.cpu
-        performance_class.memory
-        performance_class.loadavg
-        performance_class.storage
+        # performance_class.cpu
+        # performance_class.memory
+        # performance_class.loadavg
+        # performance_class.storage
         performance_class.net
       end
     end

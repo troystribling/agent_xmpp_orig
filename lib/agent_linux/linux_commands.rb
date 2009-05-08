@@ -36,7 +36,7 @@ class LinuxCommands
     def cat(file_name)
       `cat #{file_name}`.split("\n")
     end  
-
+    
     #.........................................................................................................
     def file_system_mount_to_device
       fs_type_result = `df -T`
@@ -44,12 +44,14 @@ class LinuxCommands
         `df --type=#{fst} -H`.split("\n")[1..-1].each do |row|
           vals = row.split(/\s+/)
           result.push({:mount => vals[5..-1].join(" "), :device => vals[0]})
+        end
+        result
       end
     end
 
     #.........................................................................................................
-    def sector_size(device)
-      512.0 / 1024.0
+    def sector_size(device = nil)
+      (512.0 / 1024.0**2).precision
     end
           
   ###------------------------------------------------------------------------------------------------------

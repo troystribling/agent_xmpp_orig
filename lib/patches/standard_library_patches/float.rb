@@ -8,7 +8,7 @@ module AgentXmpp
 
         #......................................................................................................
         def precision(p = 3)
-          (10.0**p*self).truncate.to_f/10.0**p
+          (10.0**p*self).round.to_f/10.0**p
         end
         
       #### InstanceMethods

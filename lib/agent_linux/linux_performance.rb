@@ -1,18 +1,19 @@
 ############################################################################################################
 class LinuxPerformance
 
+  #.........................................................................................................
+  @last_vals = {}
+  @last_time = {}
+      
   ###------------------------------------------------------------------------------------------------------
   class << self
 
     #.........................................................................................................
-    @last_vals = {}
-    @last_time = {}
-        
-    #.........................................................................................................
     def cpu      
       data = LinuxProcFiles.stat
+      created_at = Time.now
       unless @last_vals[:stat].nil?
-        dt = (Time.now  - @last_time[:stat]).to_f   
+        dt = (created_at - @last_time[:stat]).to_f   
         data[:cpu].each_pair do |mon, val|
           dv = 100.0*((val - @last_vals[:stat][:cpu][mon])/dt).precision
           PerformanceMonitor.new(:monitor => mon.to_s, :value => dv, :monitor_class => "cpu", :monitor_object => "system", 
@@ -36,23 +37,24 @@ class LinuxPerformance
 
     #.........................................................................................................
     def storage   
-      created_at = Time.now  
       data = LinuxCommands.file_system_usage
       data = [data] unless data.kind_of?(Array)
+      created_at = Time.now  
       data.each do |item|
-        PerformanceMonitor.new(:monitor => "used", :value => item[:used], :monitor_class => "storage", :monitor_object => item[:mount], 
+        PerformanceMonitor.new(:monitor => "used", :value => storage_used_to_f(item[:used]), :monitor_class => "storage", :monitor_object => item[:mount], 
                                :created_at => created_at).save
-        PerformanceMonitor.new(:monitor => "size", :value => item[:size], :monitor_class => "storage", :monitor_object => item[:mount], 
+        PerformanceMonitor.new(:monitor => "size", :value => storage_size_to_f(item[:size]), :monitor_class => "storage", :monitor_object => item[:mount], 
                                :created_at => created_at).save
       end   
       data = LinuxProcFiles.diskstats      
       data.each do |stat|
-        last_stats = @last_vals[:diskstats].select{|row| row[:mount].eql?(stat[:mount])}.first
-        save_monitor_hash_delta(stat[:stats], last_stats[:stats], "storage", stat[:mount]) unless last_stats.nil?
+        unless @last_vals[:diskstats].nil?
+          last_stats = @last_vals[:diskstats].select{|row| row[:mount].eql?(stat[:mount])}.first
+          save_monitor_hash_delta(stat[:stats], last_stats[:stats], "storage", stat[:mount])
+        end
       end
       @last_vals[:diskstats] = data
-      @last_time[:diskstats] = Time.now 
-      
+      @last_time[:diskstats] = created_at      
     end
 
     #.........................................................................................................
@@ -72,10 +74,30 @@ class LinuxPerformance
     end
 
     #.........................................................................................................
+    #.........................................................................................................
+    def storage_used_to_f(val)
+      val.chomp("%").to_f
+    end
+
+    #.........................................................................................................
+    def storage_size_to_f(val)
+      case val
+      when /T$/ : val.chomp("T").to_f * 1024**2
+      when /G$/ : val.chomp("G").to_f * 1024
+      when /M$/ : val.chomp("M").to_f 
+      when /K$/ : (val.chomp("K").to_f / 1024).precision
+      else
+        val.to_f
+      end
+    end
+
+    #.........................................................................................................
     def save_monitor_hash_delta(current_data, last_data, monitor_class , monitor_object)
       created_at = Time.now  
       current_data.each_pair do |mon, val|
+puts "mon=#{mon}, val=#{val}, last_data=#{last_data[mon]}"          
         delta = (val - last_data[mon]).precision
+puts "delta=#{delta}"          
         PerformanceMonitor.new(:monitor => mon.to_s, :value => delta, :monitor_class => monitor_class, :monitor_object => monitor_object, 
                                :created_at => created_at).save
       end
@@ -85,6 +107,7 @@ class LinuxPerformance
     def save_monitor_hash(data, monitor_class , monitor_object)
       created_at = Time.now  
       data.each_pair do |mon, val|
+puts "mon=#{mon}, val=#{val}"          
        PerformanceMonitor.new(:monitor => mon.to_s, :value => val.to_f, :monitor_class => monitor_class, :monitor_object => monitor_object, 
                               :created_at => created_at).save
       end
