@@ -47,10 +47,11 @@ class LinuxPerformance
                                :created_at => created_at).save
       end   
       data = LinuxProcFiles.diskstats      
-      data.each do |stat|
+      data.each do |stats|
         unless @last_vals[:diskstats].nil?
-          last_stats = @last_vals[:diskstats].select{|row| row[:mount].eql?(stat[:mount])}.first
-          save_monitor_hash_delta(stat[:stats], last_stats[:stats], "storage", stat[:mount])
+          last_stats = @last_vals[:diskstats].select{|row| row[:mount].eql?(stats[:mount])}.first
+          save_monitor_hash_delta(stats[:stats], last_stats[:stats], "storage", stats[:mount])
+          storage_service_time(stats[:stats])
         end
       end
       @last_vals[:diskstats] = data
@@ -60,9 +61,11 @@ class LinuxPerformance
     #.........................................................................................................
     def net
       data = LinuxProcFiles.net_dev      
-      data.each do |stat|
-        last_stats = @last_vals[:net_dev].select{|row| row[:if].eql?(stat[:if])}.first
-        save_monitor_hash_delta(stat[:stats], last_stats[:stats], "net", stat[:if]) unless last_stats.nil?
+      data.each do |stats|
+        unless @last_vals[:net_dev].nil?
+          last_stats = @last_vals[:net_dev].select{|row| row[:if].eql?(stats[:if])}.first
+          save_monitor_hash_delta(stats[:stats], last_stats[:stats], "net", stats[:if])
+        end
       end
       @last_vals[:net_dev] = data
       @last_time[:net_dev] = Time.now 
@@ -77,6 +80,34 @@ class LinuxPerformance
     #.........................................................................................................
     def storage_used_to_f(val)
       val.chomp("%").to_f
+    end
+
+    #.........................................................................................................
+    def service_time(busy, dv)
+      busy > 0 ? dv / busy : 0;
+    end
+
+    #.........................................................................................................
+    def storage_service_time(stats)
+      dt = (Time.now - @last_time[:stat]).to_f 
+      busy_reading = (stats[:time_reading] - @last_time[:stat][:time_reading]) / dt
+      busy_writing = (stats[:time_writing] - @last_time[:stat][:time_writing]) / dt
+      busy = busy_reading + busy_writing
+      service_time_reading = service_time(busy_reading, stats[:reads] - @last_time[:stat][:reads])
+      service_time_writing = service_time(busy_writing, stats[:writes] - @last_time[:stat][:writes])
+      service_time_rw = service_time(busy, stats[:writes] + stats[:reads] - @last_time[:stat][:writes] - @last_time[:stat][:writes])
+      PerformanceMonitor.new(:monitor => "busy_reading", :value => busy_reading, :monitor_class => "storage", :monitor_object => stat[:mount], 
+                             :created_at => created_at).save
+      PerformanceMonitor.new(:monitor => "busy_writing", :value => busy_writing, :monitor_class => "storage", :monitor_object => stat[:mount], 
+                             :created_at => created_at).save
+      PerformanceMonitor.new(:monitor => "busy", :value => busy, :monitor_class => "storage", :monitor_object => stat[:mount], 
+                             :created_at => created_at).save
+      PerformanceMonitor.new(:monitor => "service_time_reading", :value => service_time_reading, :monitor_class => "storage", :monitor_object => stat[:mount], 
+                             :created_at => created_at).save
+      PerformanceMonitor.new(:monitor => "service_time_writing", :value => service_time_writing, :monitor_class => "storage", :monitor_object => stat[:mount], 
+                             :created_at => created_at).save
+      PerformanceMonitor.new(:monitor => "service_time", :value => service_time_rw, :monitor_class => "storage", :monitor_object => stat[:mount], 
+                             :created_at => created_at).save
     end
 
     #.........................................................................................................

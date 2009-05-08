@@ -12,8 +12,8 @@ class TaskManager
         # performance_class.cpu
         # performance_class.memory
         # performance_class.loadavg
-        # performance_class.storage
-        performance_class.net
+        performance_class.storage
+        # performance_class.net
       end
     end
  

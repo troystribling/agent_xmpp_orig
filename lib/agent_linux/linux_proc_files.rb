@@ -56,8 +56,8 @@ class LinuxProcFiles
         row = r.strip.split(/\s+/)
         vals = row[1..-1].collect{|v| v.to_f}
         {:if => row[0].chomp(':'), 
-          :stat => {:recv_bytes => (vals[0] / 1024**2).precision, :recv_packets => vals[1], :recv_errors => vals[2], :recv_drop => vals[3],
-                    :trans_bytes => (vals[8] / 1024**2).precision, :trans_packets => vals[9], :trans_errrors => vals[10], :trans_drop => vals[11]}}       
+          :stats => {:recv_bytes => (vals[0] / 1024**2).precision, :recv_packets => vals[1], :recv_errors => vals[2], :recv_drop => vals[3],
+                     :trans_bytes => (vals[8] / 1024**2).precision, :trans_packets => vals[9], :trans_errrors => vals[10], :trans_drop => vals[11]}}       
       end
     end
 
@@ -82,6 +82,7 @@ class LinuxProcFiles
       LinuxCommands.cat("/proc/cpuinfo").inject(0) {|n, r| /^processor/.match(r) ? n + 1 : n}
     end  
 
+    #.......................................................................................................
     #........................................................................................................
     def mon_val(row)
       row.split(/\s+/)[1].to_f
