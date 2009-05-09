@@ -56,7 +56,7 @@ class LinuxProcFiles
         row = r.strip.split(/\s+/)
         vals = row[1..-1].collect{|v| v.to_f}
         {:if => row[0].chomp(':'), 
-          :stats => {:recv_bytes => (vals[0] / 1024**2).precision, :recv_packets => vals[1], :recv_errors => vals[2], :recv_drop => vals[3],
+         :vals => {:recv_bytes => (vals[0] / 1024**2).precision, :recv_packets => vals[1], :recv_errors => vals[2], :recv_drop => vals[3],
                      :trans_bytes => (vals[8] / 1024**2).precision, :trans_packets => vals[9], :trans_errrors => vals[10], :trans_drop => vals[11]}}       
       end
     end
@@ -69,8 +69,10 @@ class LinuxProcFiles
           stat_vals = stat_row.strip.split(/\s+/).collect{|v| v.to_f}
           sector_size = LinuxCommands.sector_size(mount[:device])
           stats.push({:mount => mount[:mount], 
-                      :stats => {:reads => stat_vals[3], :merged_reads => stat_vals[4], :kb_read=> stat_vals[5] * sector_size, :time_reading => stat_vals[6],
-                                 :writes => stat_vals[7], :kb_written=> stat_vals[8]  * sector_size, :time_writing => stat_vals[9]}})
+                      :vals => {:reads => stat_vals[3], :merged_reads => stat_vals[4], :kb_read=> (stat_vals[5] * sector_size).precision, 
+                                 :time_reading => stat_vals[6],
+                                 :writes => stat_vals[7], :kb_written=> (stat_vals[9]  * sector_size).precision, 
+                                 :time_writing => stat_vals[10]}})
         else
           stats
         end        
