@@ -17,11 +17,11 @@ class TaskManager
     #.........................................................................................................
     def performance_collection(period)
       periodic_task(period, :performance_collection) do
-        # performance_class.cpu
-        # performance_class.memory
-        # performance_class.loadavg
+        performance_class.cpu
+        performance_class.memory
+        performance_class.loadavg
         performance_class.storage
-        # performance_class.net
+        performance_class.net
       end
     end
  
