@@ -18,6 +18,11 @@ to install and run
 	bin/agent_xmpp.rb
 
 ##################################################################################################
+log file is by default placed in
+
+log/agent_xmpp_log
+
+##################################################################################################
 Place a file called agent.yml in config that has the following format
 
 jid: agent@somewhere.com
@@ -28,4 +33,7 @@ contacts:
 ##################################################################################################
 Time histories and thresholds are supported for the following performance monitors
 
-monitor_class		monitor_object		monitor		units
+monitor_class		monitor_object		monitor		units		description
+CPU					system				user		percent		percent of CPU consumed by user processes
+										nice		percent		percent of CPU consumed by nice processes
+										system		percent		percent of CPU consumed by sysem processes

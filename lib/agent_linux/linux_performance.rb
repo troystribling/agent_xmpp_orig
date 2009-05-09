@@ -135,9 +135,11 @@ class LinuxPerformance
       dt = (created_at - last_time)
       current_data.each_pair do |mon, val|
         delta = (val - last_data[mon])
-        dv_dt = (delta / dt).precision
-        PerformanceMonitor.new(:monitor => mon.to_s, :value => dv_dt, :monitor_class => monitor_class, :monitor_object => monitor_object, 
-                               :created_at => created_at).save
+        unless delta < 0
+          dv_dt = (delta / dt).precision
+          PerformanceMonitor.new(:monitor => mon.to_s, :value => dv_dt, :monitor_class => monitor_class, :monitor_object => monitor_object, 
+                                 :created_at => created_at).save
+        end
       end
     end
 
