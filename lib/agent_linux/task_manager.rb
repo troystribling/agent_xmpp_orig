@@ -8,15 +8,28 @@ class TaskManager
     # tasks
     #.........................................................................................................
     def performance_collection(period)
-      EventMachine::PeriodicTimer.new(period) do
-        # performance_class.cpu
-        # performance_class.memory
-        # performance_class.loadavg
+      periodic_task(period, "performance_collection") do
+        performance_class.cpu
+        performance_class.memory
+        performance_class.loadavg
         performance_class.storage
-        # performance_class.net
+        performance_class.net
       end
     end
  
+    #.........................................................................................................    
+    #.........................................................................................................
+    def periodic_task(period, method)
+      AgentXmpp.logger.info "TaskManager.#{method} with period #{period}s"
+      EventMachine::PeriodicTimer.new(period) do
+        start_collection = Time.now
+        AgentXmpp.logger.debug "TaskManager.#{method} starting #{start_collection}"
+        yield
+        completed_collection = Time.now
+        AgentXmpp.logger.debug "TaskManager.#{method} stopping #{completed_collection} requiring #{(completed_collection - start_collection).to_f}s"
+      end
+    end
+
     #.........................................................................................................
     def performance_class
       @@performance_class ||= eval("#{`uname -s`.chop}Performance")
@@ -26,7 +39,7 @@ class TaskManager
     # xmpp connection delegate methods
     #.........................................................................................................
     def did_connect(client_connection)
-      AgentXmpp.log_info "TaskManager::did_connect"
+      AgentXmpp.logger.info "TaskManager.did_connect"
     end
     
   ###------------------------------------------------------------------------------------------------------

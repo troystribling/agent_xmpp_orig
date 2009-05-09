@@ -43,7 +43,7 @@ module AgentXmpp
         @id_callbacks[data.id] = blk
       end
       send_data(data.to_s)
-      AgentXmpp.log_info "SEND: #{data.to_s}"
+      AgentXmpp.logger.info "SEND: #{data.to_s}"
     end
 
     #---------------------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ module AgentXmpp
 
     #.........................................................................................................
     def receive_data(data)
-      AgentXmpp.log_info "RECV: #{data.to_s}"
+      AgentXmpp.logger.info "RECV: #{data.to_s}"
       super(data)
     end
 
@@ -151,7 +151,7 @@ module AgentXmpp
         params = {:xmlns => command.x.namespace, :action => command.action, :to => stanza.from.to_s, 
           :from => stanza.from.to_s, :node => command.node, :id => stanza.id, :fields => {}}
         Routing::Routes.invoke_command_response(self, params)
-        AgentXmpp.log_info "RECEIVED COMMAND: #{command.node}, FROM: #{stanza.from.to_s}"
+        AgentXmpp.logger.info "RECEIVED COMMAND: #{command.node}, FROM: #{stanza.from.to_s}"
       end
     end
 
@@ -162,7 +162,7 @@ module AgentXmpp
       params = {:xmlns => 'message:chat', :to => stanza.from.to_s, :from => stanza.from.to_s, :id => stanza.id, 
         :body => stanza.body}
       Routing::Routes.invoke_chat_message_body_response(self, params)
-      AgentXmpp.log_info "RECEIVED MESSAGE BODY: #{stanza.body}"
+      AgentXmpp.logger.info "RECEIVED MESSAGE BODY: #{stanza.body}"
     end
 
     #---------------------------------------------------------------------------------------------------------

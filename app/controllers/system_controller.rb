@@ -11,7 +11,7 @@ class SystemController < AgentXmpp::Controller
         result.first.to_x_data
       end
     end
-    AgentXmpp.log_info "ACTION: AgentLinux.SystemController\#uptime"
+    AgentXmpp.logger.info "ACTION: AgentLinux.SystemController\#uptime"
   end
 
   #.........................................................................................................
@@ -24,7 +24,7 @@ class SystemController < AgentXmpp::Controller
         result.to_x_data
       end
     end
-    AgentXmpp.log_info "ACTION: AgentLinux.SystemController\#file_system_usage"
+    AgentXmpp.logger.info "ACTION: AgentLinux.SystemController\#file_system_usage"
   end
   
 ############################################################################################################

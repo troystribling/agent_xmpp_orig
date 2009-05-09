@@ -3,3 +3,4 @@
 .svn
 *.yml
 *.db
+log/*

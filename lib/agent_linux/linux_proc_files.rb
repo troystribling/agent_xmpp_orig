@@ -56,8 +56,8 @@ class LinuxProcFiles
         row = r.strip.split(/\s+/)
         vals = row[1..-1].collect{|v| v.to_f}
         {:if => row[0].chomp(':'), 
-         :vals => {:recv_bytes => (vals[0] / 1024**2).precision, :recv_packets => vals[1], :recv_errors => vals[2], :recv_drop => vals[3],
-                     :trans_bytes => (vals[8] / 1024**2).precision, :trans_packets => vals[9], :trans_errrors => vals[10], :trans_drop => vals[11]}}       
+         :vals => {:recv_kbytes => (vals[0] / 1024).precision, :recv_packets => vals[1], :recv_errors => vals[2], :recv_drop => vals[3],
+                   :trans_kbytes => (vals[8] / 1024).precision, :trans_packets => vals[9], :trans_errrors => vals[10], :trans_drop => vals[11]}}       
       end
     end
 

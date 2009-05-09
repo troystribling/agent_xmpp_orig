@@ -103,17 +103,6 @@ class LinuxPerformance
       service_time_reading = service_time(dt_read, dread)
       service_time_writing = service_time(dt_write, dwrite)
       service_time_rw = service_time(dt_read + dt_write, dread + dwrite)
-puts "dt=#{dt}"
-puts "dt_read=#{dt_read}"
-puts "dt_write=#{dt_write}"
-puts "dread=#{dread}"
-puts "dwrite=#{dwrite}"
-puts "busy_reading=#{busy_reading}"
-puts "busy_writing=#{busy_writing}"
-puts "busy=#{busy}"
-puts "service_time_reading=#{service_time_reading}"
-puts "service_time_writing=#{service_time_writing}"
-puts "service_time_rw=#{service_time_rw}"
       PerformanceMonitor.new(:monitor => "busy_reading", :value => busy_reading, :monitor_class => "storage", :monitor_object => monitor_object, 
                              :created_at => created_at).save
       PerformanceMonitor.new(:monitor => "busy_writing", :value => busy_writing, :monitor_class => "storage", :monitor_object => monitor_object, 
@@ -145,12 +134,8 @@ puts "service_time_rw=#{service_time_rw}"
       created_at = Time.now  
       dt = (created_at - last_time)
       current_data.each_pair do |mon, val|
-puts "mon=#{mon}, val=#{val}, last_data=#{last_data[mon]}"          
         delta = (val - last_data[mon])
-puts "dt=#{dt}"      
-puts "delta=#{delta}"      
         dv_dt = (delta / dt).precision
-puts "dv_dt=#{dv_dt}"      
         PerformanceMonitor.new(:monitor => mon.to_s, :value => dv_dt, :monitor_class => monitor_class, :monitor_object => monitor_object, 
                                :created_at => created_at).save
       end
@@ -160,7 +145,6 @@ puts "dv_dt=#{dv_dt}"
     def save_monitor_hash(data, monitor_class , monitor_object)
       created_at = Time.now  
       data.each_pair do |mon, val|
-puts "mon=#{mon}, val=#{val}"          
        PerformanceMonitor.new(:monitor => mon.to_s, :value => val.to_f, :monitor_class => monitor_class, :monitor_object => monitor_object, 
                               :created_at => created_at).save
       end
