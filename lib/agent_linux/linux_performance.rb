@@ -4,7 +4,7 @@ class LinuxPerformance
   #.........................................................................................................
   @last_vals = {}
   @last_time = {}
-      
+
   ###------------------------------------------------------------------------------------------------------
   class << self
 
@@ -46,13 +46,13 @@ class LinuxPerformance
         PerformanceMonitor.new(:monitor => "size", :value => storage_size_to_f(item[:size]), :monitor_class => "storage", :monitor_object => item[:mount], 
                                :created_at => created_at).save
       end   
-      data = LinuxProcFiles.diskstats      
+      data = LinuxProcFiles.diskstats  
       unless @last_vals[:diskstats].nil?
         data.each do |stats|
           last_stats = @last_vals[:diskstats].select{|row| row[:mount].eql?(stats[:mount])}.first
           unless last_stats.nil?
             save_monitor_hash_derivative(stats[:vals], last_stats[:vals], @last_time[:diskstats], "storage", stats[:mount])
-            storage_service_time(stats[:vals], last_stats[:vals], stats[:mount])
+            storage_service_time(stats[:vals], last_stats[:vals], stats[:time_vals], last_stats[:time_vals], stats[:mount])
           end
         end
       end
@@ -90,24 +90,21 @@ class LinuxPerformance
     end
 
     #.........................................................................................................
-    def storage_service_time(stats, last_stats, monitor_object)
+    def storage_service_time(stats, last_stats, time_stats, last_time_stats, monitor_object)
       created_at = Time.now   
       dt = (created_at - @last_time[:diskstats]).to_f 
-      dt_read = (stats[:time_reading] - last_stats[:time_reading])
-      dt_write = (stats[:time_writing] - last_stats[:time_writing])
+      dt_read = (time_stats[:time_reading] - last_time_stats[:time_reading])
+      dt_write = (time_stats[:time_writing] - last_time_stats[:time_writing])
       dread = stats[:reads] - last_stats[:reads]
       dwrite = stats[:writes] - last_stats[:writes]
       busy_reading = (0.1 * dt_read / dt).precision
       busy_writing = (0.1 * dt_write / dt).precision
-      busy = busy_reading + busy_writing
       service_time_reading = service_time(dt_read, dread)
       service_time_writing = service_time(dt_write, dwrite)
       service_time_rw = service_time(dt_read + dt_write, dread + dwrite)
       PerformanceMonitor.new(:monitor => "busy_reading", :value => busy_reading, :monitor_class => "storage", :monitor_object => monitor_object, 
                              :created_at => created_at).save
       PerformanceMonitor.new(:monitor => "busy_writing", :value => busy_writing, :monitor_class => "storage", :monitor_object => monitor_object, 
-                             :created_at => created_at).save
-      PerformanceMonitor.new(:monitor => "busy", :value => busy, :monitor_class => "storage", :monitor_object => monitor_object, 
                              :created_at => created_at).save
       PerformanceMonitor.new(:monitor => "service_time_reading", :value => service_time_reading, :monitor_class => "storage", :monitor_object => monitor_object, 
                              :created_at => created_at).save
@@ -134,9 +131,9 @@ class LinuxPerformance
       created_at = Time.now  
       dt = (created_at - last_time)
       current_data.each_pair do |mon, val|
-        delta = (val - last_data[mon])
-        unless delta < 0
-          dv_dt = (delta / dt).precision
+        dv = (val - last_data[mon])
+        unless dv < 0
+          dv_dt = (dv / dt).precision
           PerformanceMonitor.new(:monitor => mon.to_s, :value => dv_dt, :monitor_class => monitor_class, :monitor_object => monitor_object, 
                                  :created_at => created_at).save
         end

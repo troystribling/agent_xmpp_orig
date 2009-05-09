@@ -24,23 +24,21 @@ class LinuxProcFiles
        :mem_free      => vals[1],
        :buffers       => vals[2],
        :cached        => vals[3],
-       :swp_cached    => vals[4],
-       :active        => vals[5],
-       :inactive      => vals[6],
+       :swap_cached  => vals[4],
        :swap_total    => vals[11],
        :swap_free     => vals[12],
        :swap_used     => (vals[11] - vals[12]).precision,
-       :total_cached  => (vals[2] + vals[3] + vals[4]).precision,
-       :total_used    => (vals[0] - vals[1]).precision,
-       :process_used  => (vals[0] - vals[1] - vals[2] - vals[3] - vals[4]).precision}
+       :cached_total  => (vals[2] + vals[3] + vals[4]).precision,
+       :used_total    => (vals[0] - vals[1]).precision,
+       :used_process  => (vals[0] - vals[1] - vals[2] - vals[3] - vals[4]).precision}
     end
 
     #.......................................................................................................
     def vmstat
       rows = LinuxCommands.cat("/proc/vmstat").collect{|v| mon_val(v)}
       page_size = LinuxCommands.get_memory_page_size
-      {:pgin => rows[15] * page_size, :pgin => rows[16] * page_size,
-       :pswpin => rows[17] * page_size, :pswpout => rows[18] * page_size,
+      {:pgin => (rows[15] * page_size).precision, :pgin => (rows[16] * page_size).precision,
+       :pswpin => (rows[17] * page_size).precision, :pswpout => (rows[18] * page_size).precision,
        :pgfault => rows[26], :pgmajfault => rows[27]}         
     end
 
@@ -69,10 +67,9 @@ class LinuxProcFiles
           stat_vals = stat_row.strip.split(/\s+/).collect{|v| v.to_f}
           sector_size = LinuxCommands.sector_size(mount[:device])
           stats.push({:mount => mount[:mount], 
-                      :vals => {:reads => stat_vals[3], :merged_reads => stat_vals[4], :kb_read=> (stat_vals[5] * sector_size).precision, 
-                                 :time_reading => stat_vals[6],
-                                 :writes => stat_vals[7], :kb_written=> (stat_vals[9]  * sector_size).precision, 
-                                 :time_writing => stat_vals[10]}})
+                      :vals => {:reads => stat_vals[3], :merged_reads => stat_vals[4], :kb_read=> (stat_vals[5] * sector_size).precision,                                 
+                                :writes => stat_vals[7], :kb_written=> (stat_vals[9]  * sector_size).precision},
+                      :time_vals => {:time_reading => stat_vals[6], :time_writing => stat_vals[10]}})
         else
           stats
         end        
