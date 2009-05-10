@@ -67,7 +67,7 @@ memory				system				mem_total				MB			total amount of memory consumed by all act
 loadavg				system				one_minute				number		one minute load average
 										five_minute				number		five minute load average
 										fifteen_minute			number		fifteen minute load average
-storage				mount point			used					MB			total storage used by mount point
+storage				mount point			used					percent		total storage used by mount point relative to size
 										size					MB			total storage allocated to mount point
 										reads					number/s	number of reads at mount point
 										merged_reads			number/s	number of merged/aggregated reads at mount point
