@@ -88,8 +88,8 @@ storage             mount point         used                    percent     tota
                                         kb_written              KB/s        KB written at mount point
                                         busy_writing            percent     amount of time spent busy_writing to mount 
                                                                             point
-                                        service_time_writing    ms          average time required to service a write to 
-                                                                            mount point
+                                        service_time_writing    ms          average time required to service a write 
+                                                                            to mount point
                                         service_time            ms          average time required to service a read or 
                                                                             write request at mount point
 net                 interface           recv_kbytes             KB/s        kilobytes received at interface
