@@ -6,7 +6,7 @@ class LinuxProcFiles
     
     #.......................................................................................................
     def stat
-      rows = LinuxCommands.cat("/proc/stat")
+      rows = cat("/proc/stat")
         cpu_row = rows[0].split(/\s+/)[1..-1].collect{|c| c.to_f/100.0}
         cpu = {:user => cpu_row[0], :nice => cpu_row[1], :system => cpu_row[2], :idle => cpu_row[3], :iowait => cpu_row[4],
                :irq => cpu_row[5], :softirq => cpu_row[6], :steal => cpu_row[7], :guest => cpu_row[8], 
@@ -19,7 +19,7 @@ class LinuxProcFiles
 
     #.......................................................................................................
     def meminfo
-      vals = LinuxCommands.cat("/proc/meminfo").collect{|v| (mon_val(v) / 1024).precision}
+      vals = cat("/proc/meminfo").collect{|v| (mon_val(v) / 1024).precision}
       {:mem_total     => vals[0],
        :mem_free      => vals[1],
        :buffers       => vals[2],
@@ -35,8 +35,8 @@ class LinuxProcFiles
 
     #.......................................................................................................
     def vmstat
-      rows = LinuxCommands.cat("/proc/vmstat").collect{|v| mon_val(v)}
-      page_size = LinuxCommands.get_memory_page_size
+      rows = cat("/proc/vmstat").collect{|v| mon_val(v)}
+      page_size = get_memory_page_size
       {:pgin => (rows[15] * page_size).precision, :pgin => (rows[16] * page_size).precision,
        :pswpin => (rows[17] * page_size).precision, :pswpout => (rows[18] * page_size).precision,
        :pgfault => rows[26], :pgmajfault => rows[27]}         
@@ -44,13 +44,13 @@ class LinuxProcFiles
 
     #.......................................................................................................
     def loadavg
-      vals = LinuxCommands.cat("/proc/loadavg")[0].split(/\s+/)[0..-3].collect{|v| v.to_f}
+      vals = cat("/proc/loadavg")[0].split(/\s+/)[0..-3].collect{|v| v.to_f}
       {:one_minute => vals[0], :five_minute => vals[1], :fifteen_minue => vals[2]}        
     end
 
     #.......................................................................................................
     def net_dev
-      LinuxCommands.cat("/proc/net/dev").select{|r| /eth\d/.match(r)}.collect do |r|
+      cat("/proc/net/dev").select{|r| /eth\d/.match(r)}.collect do |r|
         row = r.strip.split(/\s+/)
         vals = row[1..-1].collect{|v| v.to_f}
         {:if => row[0].chomp(':'), 
@@ -61,11 +61,11 @@ class LinuxProcFiles
 
     #.......................................................................................................
     def diskstats
-      LinuxCommands.file_system_mount_to_device.inject([]) do |stats, mount|
-        stat_row = LinuxCommands.cat("/proc/diskstats").select{|row| /#{mount[:device].split("/").last}/.match(row)}.first
+      file_system_mount_to_device.inject([]) do |stats, mount|
+        stat_row = cat("/proc/diskstats").select{|row| /#{mount[:device].split("/").last}/.match(row)}.first
         unless stat_row.nil?
           stat_vals = stat_row.strip.split(/\s+/).collect{|v| v.to_f}
-          sector_size = LinuxCommands.sector_size(mount[:device])
+          sector_size = sector_size(mount[:device])
           stats.push({:mount => mount[:mount], 
                       :vals => {:reads => stat_vals[3], :merged_reads => stat_vals[4], :kb_read=> (stat_vals[5] * sector_size).precision,                                 
                                 :writes => stat_vals[7], :kb_written=> (stat_vals[9]  * sector_size).precision},
@@ -78,13 +78,42 @@ class LinuxProcFiles
 
     #......................................................................................................
     def cpu_count
-      LinuxCommands.cat("/proc/cpuinfo").inject(0) {|n, r| /^processor/.match(r) ? n + 1 : n}
+      cat("/proc/cpuinfo").inject(0) {|n, r| /^processor/.match(r) ? n + 1 : n}
     end  
 
+  ####.....................................................................................................
+  private
+  
     #.......................................................................................................
-    #........................................................................................................
     def mon_val(row)
       row.split(/\s+/)[1].to_f
+    end
+
+    #.......................................................................................................
+    def get_memory_page_size
+      (`getconf PAGESIZE`.chop.to_f/1024).precision
+    end
+    
+    #.......................................................................................................
+    def cat(file_name)
+      `cat #{file_name}`.split("\n")
+    end  
+    
+    #.......................................................................................................
+    def file_system_mount_to_device
+      fs_type_result = `df -T`
+      ['hfs', 'ext3', 'ext', 'ext2'].select{|fst| /\s#{fst}\s/.match(fs_type_result)}.inject([]) do |result, fst|
+        `df --type=#{fst} -H`.split("\n")[1..-1].each do |row|
+          vals = row.split(/\s+/)
+          result.push({:mount => vals[5..-1].join(" "), :device => vals[0]})
+        end
+        result
+      end
+    end
+
+    #.........................................................................................................
+    def sector_size(device = nil)
+      (512.0 / 1024.0)
     end
 
   ###--------------------------------------------------------------------------------------------------------
