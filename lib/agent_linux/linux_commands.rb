@@ -32,11 +32,10 @@ class LinuxCommands
     def ethernet_interfaces
       ifaces = /(eth\d)/.match(`ifconfig -a`).captures.inject([]) do |result, iface|
         ifconfig = `ifconfig #{iface}`
-        ip = /inet\saddr:(\d+\.\d+\.\d+)/.match(ifconfig).captures.last
+        ip = /inet\saddr:(\d+\.\d+\.\d+\.\d+)/.match(ifconfig).captures.last
         mac = /HWaddr\s(\w+\:\w+\:\w+\:\w+\:\w+\:\w+)/.match(ifconfig).captures.last
         ip.nil? ? result : result.push({:iface => iface, :ip => ip, :mac => mac})  
       end
-p ifaces      
       ifaces.count.eql?(1) ? ifaces.first : ifaces
     end
 
