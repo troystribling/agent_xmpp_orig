@@ -68,7 +68,7 @@ memory              system              mem_total               MB          tota
                                         pgout                   KB/s        total memory paged out
                                         pswpin                  KB/s        total memory paged in from swap file
                                         pswpout                 KB/s        total memory paged out to swap file
-                                        pgfault                 number/s    total page faults
+                                        pgfault                 number/s    total page faults(soft and major)
                                         pgmajfault              number/s    total major page faults
 loadavg             system              one_minute              number      one minute load average
                                         five_minute             number      five minute load average
