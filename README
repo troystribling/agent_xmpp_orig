@@ -37,18 +37,23 @@ monitor_class       monitor_object      monitor                 units       desc
 cpu                 system              total                   percent     total amount of CPU consumed by all 
                                                                             activities
                                         user                    percent     amount of CPU consumed by user processes
-                                        nice                    percent     amount of CPU consumed by nice user processes
+                                        nice                    percent     amount of CPU consumed by nice user 
+                                                                            processes
                                         system                  percent     amount of CPU consumed by system processes
                                         idle                    percent     amount of CPU idle
                                         iowait                  percent     amount of CPU consumed waiting on IO
-                                        irq                     percent     amount of CPU consumed servicing hardware interrupts
-                                        softirq                 percent     amount of CPU consumed servicing software interrupts
-                                        steal                   percent     amount of CPU consumed by virtual host hypervisor
+                                        irq                     percent     amount of CPU consumed servicing hardware 
+                                                                            interrupts
+                                        softirq                 percent     amount of CPU consumed servicing software 
+                                                                            interrupts
+                                        steal                   percent     amount of CPU consumed by virtual host 
+                                                                            hypervisor
                                         guest                   percent     amount of CPU consumed by hosted guests
                                         ctxt                    number/s    number of context switches per second
                                         processes               number/s    number of new processes per second
                                         procs_running           number      number of running processes
-memory              system              mem_total               MB          total amount of memory consumed by all activities
+memory              system              mem_total               MB          total amount of memory consumed by all 
+                                                                            activities
                                         mem_free                MB          free memory
                                         buffers                 MB          memory used by buffer cache
                                         cached                  MB          memory used by page cache
@@ -68,18 +73,25 @@ memory              system              mem_total               MB          tota
 loadavg             system              one_minute              number      one minute load average
                                         five_minute             number      five minute load average
                                         fifteen_minute          number      fifteen minute load average
-storage             mount point         used                    percent     total storage used by mount point relative to size
+storage             mount point         used                    percent     total storage used by mount point relative 
+                                                                            to size
                                         size                    MB          total storage allocated to mount point
                                         reads                   number/s    number of reads at mount point
-                                        merged_reads            number/s    number of merged/aggregated reads at mount point
+                                        merged_reads            number/s    number of merged/aggregated reads at mount 
+                                                                            point
                                         kb_read                 KB/s        KB read at mount point
-                                        busy_reading            percent     amount of time spent reading from mount point
-                                        service_time_reading    ms          average time required to service a read from mount point
+                                        busy_reading            percent     amount of time spent reading from mount 
+                                                                            point
+                                        service_time_reading    ms          average time required to service a read 
+                                                                            from mount point
                                         writes                  number/s    number of writes at mount point
                                         kb_written              KB/s        KB written at mount point
-                                        busy_writing            percent     amount of time spent busy_writing to mount point
-                                        service_time_writing    ms          average time required to service a write to mount point
-                                        service_time            ms          average time required to service a read or write request at mount point
+                                        busy_writing            percent     amount of time spent busy_writing to mount 
+                                                                            point
+                                        service_time_writing    ms          average time required to service a write to 
+                                                                            mount point
+                                        service_time            ms          average time required to service a read or 
+                                                                            write request at mount point
 net                 interface           recv_kbytes             KB/s        kilobytes received at interface
                                         recv_packets            number/s    packets received at interface
                                         recv_errors             number/s    errors received at interface
