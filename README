@@ -33,8 +33,8 @@ contacts:
 ##################################################################################################
 Time histories and alarm thresholds are supported for the following performance monitors
 
-monitor_class		monitor_object		monitor					units		description
-cpu					system				total					percent		total amount of CPU consumed by all activities
+monitor_class       monitor_object      monitor                 units       description
+cpu                 system              total                   percent     totalamount of CPU consumed by all activities
 										user					percent		amount of CPU consumed by user processes
 										nice					percent		amount of CPU consumed by nice user processes
 										system					percent		amount of CPU consumed by system processes
