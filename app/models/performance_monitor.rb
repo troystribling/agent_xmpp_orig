@@ -11,6 +11,6 @@ class PerformanceMonitor
   property :monitor_class,      String
   property :monitor_object,     String
   property :value,              Float
-  property :created_at,         DateTime
+  property :created_at,         Time
 
 end

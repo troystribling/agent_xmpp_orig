@@ -25,6 +25,13 @@ class TaskManager
       end
     end
  
+    #.........................................................................................................
+    def trim_performance_data(period)
+      periodic_task(period, :trim_performance_data) do
+        PerformanceMonitor.all(:created_at.lt => Time.now - period).destroy!
+      end
+    end
+ 
     #.........................................................................................................    
     #.........................................................................................................
     def periodic_task(period, method)
@@ -36,7 +43,7 @@ class TaskManager
         AgentXmpp.logger.debug "TaskManager.#{method.to_s} starting #{start_collection}"
         yield
         completed_collection = Time.now
-        AgentXmpp.logger.debug "TaskManager.#{method.to_s} stopping #{completed_collection} requiring #{(completed_collection - start_collection).to_f}s"
+        AgentXmpp.logger.debug "TaskManager.#{method.to_s} stopping #{completed_collection} required #{(completed_collection - start_collection).to_f}s"
         last_collection[method] = completed_collection
       end
     end
