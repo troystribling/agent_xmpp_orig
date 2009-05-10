@@ -9,7 +9,7 @@ end
 ####------------------------------------------------------------------------------------------------------
 AgentXmpp::Boot.after_app_load do
 
-  AgentXmpp.logger.level = Logger::DEBUG
+  AgentXmpp.logger.level = Logger::INFO
   DataMapper.setup(:default, "sqlite3://#{app_dir}/db/agent_linux.db")
   # DataMapper::Logger.new(AgentXmpp.log_file, :debug)
   # DataObjects::Sqlite3.logger = DataObjects::Logger.new(AgentXmpp.log_file, 0)

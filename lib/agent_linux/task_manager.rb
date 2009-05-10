@@ -3,13 +3,14 @@ class TaskManager
  
   #.........................................................................................................
   @last_collection = {}
+  @collection_period = {}
   #.........................................................................................................
 
   ####------------------------------------------------------------------------------------------------------
   class << self
     
     #.........................................................................................................
-    attr_accessor :last_collection
+    attr_accessor :last_collection, :collection_period
     #.........................................................................................................
 
     #.........................................................................................................
@@ -39,6 +40,7 @@ class TaskManager
     def periodic_task(period, method)
       AgentXmpp.logger.info "TaskManager.#{method.to_s} with period #{period}s"
       last_collection[method] = Time.now
+      collection_period[method] = period
       EventMachine::PeriodicTimer.new(period) do
         start_collection = Time.now
         AgentXmpp.logger.debug "TaskManager.#{method.to_s} last collection #{(start_collection - last_collection[method]).to_f}s ago"
