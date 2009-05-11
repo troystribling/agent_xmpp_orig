@@ -20,9 +20,10 @@ class PerformanceMonitor
     def query_gte_time(args)
       class_eval <<-do_eval
         def self.#{args[:monitor].to_s}_gte_time(interval)
-          self.all(:created_at.gte => interval, :monitor_class => "#{args[:monitor_class].to_s}", :monitor => "#{args[:monitor].to_s}", :order => [:created_at.desc]).to_a.collect do |pm|
+          time_series = self.all(:created_at.gte => interval, :monitor_class => "#{args[:monitor_class].to_s}", :monitor => "#{args[:monitor].to_s}", :order => [:created_at.desc]).to_a.collect do |pm|
             {"#{args[:monitor]}" => pm.value, :created_at => pm.created_at}
           end
+          time_series.count.eql?(1) ? time_series.first : time_series
         end
       do_eval
     end
