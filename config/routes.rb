@@ -6,6 +6,6 @@ AgentXmpp::Routing::Routes::draw do |map|
   map.connect 'ethernet_interfaces/execute',  :controller => 'system',      :action => 'ethernet_interfaces'
   
   #### performance commands
-  map.connect 'cpu_stats/execute',            :controller => 'performance', :action => 'cpu_stats'
+  map.connect 'cpu_total/execute',            :controller => 'performance', :action => 'cpu_total'
   
 end

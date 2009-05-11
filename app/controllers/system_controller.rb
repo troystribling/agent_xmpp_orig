@@ -7,9 +7,7 @@ class SystemController < AgentXmpp::Controller
       LinuxCommands.uptime 
     end
     respond_to do |result|
-      format.x_data do 
-        result.first.to_x_data
-      end
+      result.first.to_x_data
     end
     AgentXmpp.logger.info "ACTION: SystemController\#uptime"
   end
@@ -20,9 +18,7 @@ class SystemController < AgentXmpp::Controller
       LinuxCommands.file_system_usage 
     end
     respond_to do |result|
-      format.x_data do 
-        result.to_x_data
-      end
+      result.to_x_data
     end
     AgentXmpp.logger.info "ACTION: SystemController\#file_system_usage"
   end
@@ -33,9 +29,7 @@ class SystemController < AgentXmpp::Controller
       LinuxCommands.ethernet_interfaces 
     end
     respond_to do |result|      
-      format.x_data do 
-        result.to_x_data
-      end
+      result.to_x_data
     end
     AgentXmpp.logger.info "ACTION: SystemController\#ethernet_intefaces"
   end

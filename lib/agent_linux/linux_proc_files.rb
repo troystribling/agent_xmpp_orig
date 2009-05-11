@@ -10,7 +10,7 @@ class LinuxProcFiles
         cpu_row = rows[0].split(/\s+/)[1..-1].collect{|c| c.to_f/100.0}
         cpu = {:user => cpu_row[0], :nice => cpu_row[1], :system => cpu_row[2], :idle => cpu_row[3], :iowait => cpu_row[4],
                :irq => cpu_row[5], :softirq => cpu_row[6], :steal => cpu_row[7], :guest => cpu_row[8], 
-               :total => cpu_row[0] + cpu_row[1] + cpu_row[2] + cpu_row[4] + cpu_row[5] + cpu_row[6] + cpu_row[7] + cpu_row[8]} 
+               :cpu_total => cpu_row[0] + cpu_row[1] + cpu_row[2] + cpu_row[4] + cpu_row[5] + cpu_row[6] + cpu_row[7] + cpu_row[8]} 
         ncpus = cpu_count   
         {:cpu       => cpu, 
          :cpu_procs => {:ctxt => mon_val(rows[2 + ncpus]), :processes => mon_val(rows[4 + ncpus])}, 
@@ -24,7 +24,7 @@ class LinuxProcFiles
        :mem_free      => vals[1],
        :buffers       => vals[2],
        :cached        => vals[3],
-       :swap_cached  => vals[4],
+       :swap_cached   => vals[4],
        :swap_total    => vals[11],
        :swap_free     => vals[12],
        :swap_used     => (vals[11] - vals[12]).precision,
