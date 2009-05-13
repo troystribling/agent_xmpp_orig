@@ -5,16 +5,23 @@ class LinuxProcFiles
   class << self
     
     #.......................................................................................................
+    def uptime
+      vals = cat("/proc/uptime")[0].split(/\s+/).collect{|v| v.to_f}
+      {:booted_on => Time.now - vals[0], :up_time => time_interval(vals[0]), 
+       :busy => (vals[0] - vals[1]) / vals[0], :idle => vals[1] / vals[0]}    
+    end    
+    
+    #.......................................................................................................
     def stat
       rows = cat("/proc/stat")
-        cpu_row = rows[0].split(/\s+/)[1..-1].collect{|c| c.to_f/100.0}
-        cpu = {:user => cpu_row[0], :nice => cpu_row[1], :system => cpu_row[2], :idle => cpu_row[3], :iowait => cpu_row[4],
-               :irq => cpu_row[5], :softirq => cpu_row[6], :steal => cpu_row[7], :guest => cpu_row[8], 
-               :cpu_total => cpu_row[0] + cpu_row[1] + cpu_row[2] + cpu_row[4] + cpu_row[5] + cpu_row[6] + cpu_row[7] + cpu_row[8]} 
-        ncpus = cpu_count   
-        {:cpu       => cpu, 
-         :cpu_procs => {:ctxt => mon_val(rows[2 + ncpus]), :processes => mon_val(rows[4 + ncpus])}, 
-         :procs     => {:procs_running => mon_val(rows[5 + ncpus]), :procs_blocked => mon_val(rows[6 + ncpus])}}
+      cpu_row = rows[0].split(/\s+/)[1..-1].collect{|c| c.to_f/100.0}
+      cpu = {:user => cpu_row[0], :nice => cpu_row[1], :system => cpu_row[2], :idle => cpu_row[3], :iowait => cpu_row[4],
+             :irq => cpu_row[5], :softirq => cpu_row[6], :steal => cpu_row[7], :guest => cpu_row[8], 
+             :cpu_total => cpu_row[0] + cpu_row[1] + cpu_row[2] + cpu_row[4] + cpu_row[5] + cpu_row[6] + cpu_row[7] + cpu_row[8]} 
+      ncpus = cpu_count   
+      {:cpu       => cpu, 
+       :cpu_procs => {:ctxt => mon_val(rows[2 + ncpus]), :processes => mon_val(rows[4 + ncpus])}, 
+       :procs     => {:procs_running => mon_val(rows[5 + ncpus]), :procs_blocked => mon_val(rows[6 + ncpus])}}
     end
 
     #.......................................................................................................
@@ -84,6 +91,14 @@ class LinuxProcFiles
   ####.....................................................................................................
   private
   
+    #.......................................................................................................
+    def time_interval(interval)
+      days = (interval/86400).truncate
+      hours = ((interval - days * 86400) / 3600).truncate
+      minutes = ((interval - hours * 3600 - days * 86400) / 60).truncate
+      {:days => days, :hours => hours, :minutes => minutes}
+    end
+
     #.......................................................................................................
     def mon_val(row)
       row.split(/\s+/)[1].to_f

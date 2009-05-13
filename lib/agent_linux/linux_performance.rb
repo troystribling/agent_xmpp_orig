@@ -119,10 +119,10 @@ class LinuxPerformance
     #.........................................................................................................
     def storage_size_to_f(val)
       case val
-      when /T$/ : val.chomp("T").to_f * 1024**2
-      when /G$/ : val.chomp("G").to_f * 1024
-      when /M$/ : val.chomp("M").to_f 
-      when /K$/ : (val.chomp("K").to_f / 1024).precision
+      when /T$/ then val.chomp("T").to_f * 1024**2
+      when /G$/ then val.chomp("G").to_f * 1024
+      when /M$/ then val.chomp("M").to_f 
+      when /K$/ then (val.chomp("K").to_f / 1024).precision
       else
         val.to_f
       end

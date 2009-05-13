@@ -276,9 +276,9 @@ module AgentXmpp
       if stanza.type == :set and stanza.query.kind_of?(Jabber::Roster::IqQueryRoster)
         stanza.query.each_element do |i|  
           method =  case i.subscription
-                    when :remove : :did_remove_roster_item
-                    when :none   : :did_receive_roster_item
-                    when :to     : :did_add_contact
+                    when :remove then :did_remove_roster_item
+                    when :none   then :did_receive_roster_item
+                    when :to     then :did_add_contact
                     end         
           broadcast_to_delegates(method, self, i) unless method.nil?
         end

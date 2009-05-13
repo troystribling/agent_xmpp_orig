@@ -4,10 +4,13 @@ class SystemController < AgentXmpp::Controller
   #.........................................................................................................
   def uptime
     result_for do
-      LinuxCommands.uptime 
+      LinuxProcFiles.uptime 
     end
     respond_to do |result|
-      result.first.to_x_data
+      up_time = result.first     
+      {:booted_on => up_time[:booted_on].strftime("%Y-%m-%d %H:%M:%S"), 
+       :up_time => "#{up_time[:up_time][:days]} days, #{up_time[:up_time][:hours]}:#{up_time[:up_time][:minutes]}",
+       :busy => "#{(100*up_time[:busy]).round}%", :idle => "#{(100*up_time[:idle]).round}%"}.to_x_data
     end
     AgentXmpp.logger.info "ACTION: SystemController\#uptime"
   end
