@@ -9,7 +9,7 @@ class SystemController < AgentXmpp::Controller
     respond_to do |result|
       up_time = result.first     
       {:booted_on => up_time[:booted_on].strftime("%Y-%m-%d %H:%M:%S"), 
-       :up_time => "#{up_time[:up_time][:days]} days, #{up_time[:up_time][:hours]}:#{up_time[:up_time][:minutes]}",
+       :up_time => "#{up_time[:up_time][:days]} d, #{up_time[:up_time][:hours]} h, #{up_time[:up_time][:minutes]} m",
        :busy => "#{(100*up_time[:busy]).round}%", :idle => "#{(100*up_time[:idle]).round}%"}.to_x_data
     end
     AgentXmpp.logger.info "ACTION: SystemController\#uptime"
