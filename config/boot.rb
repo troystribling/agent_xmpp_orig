@@ -24,7 +24,7 @@ AgentXmpp::Boot.after_connection_completed do |connection|
 
   connection.add_delegate(TaskManager)  
   TaskManager.performance_collection(10)
-  TaskManager.trim_performance_data(60)
+  TaskManager.trim_performance_data(3600)
   AgentXmpp.logger.info "AgentXmpp::BootApp.after_connection_completed"
 
 end
