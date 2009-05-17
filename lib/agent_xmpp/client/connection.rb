@@ -169,7 +169,6 @@ module AgentXmpp
     # AgentXmpp::Parser callbacks
     #.........................................................................................................
     def receive(stanza)
-      
       if stanza.kind_of?(Jabber::XMPPStanza) and stanza.id and blk = @id_callbacks[stanza.id]
         @id_callbacks.delete(stanza.id)
         blk.call(stanza)

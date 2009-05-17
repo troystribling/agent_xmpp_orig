@@ -19,15 +19,19 @@ module AgentXmpp
 
     #.........................................................................................................
     def connect
-      EventMachine.run do
-        @connection = EventMachine.connect(jid.domain, port, Connection, self, jid, 
-          password, port)
+      while (true)
+        EventMachine.run do
+          @connection = EventMachine.connect(jid.domain, port, Connection, self, jid, password, port)
+        end
+        sleep(10.0)
+        AgentXmpp.logger.warn "RESTARTING SERVER"
       end
     end
 
     #.........................................................................................................
     def reconnect
-      connection.reconnect
+      AgentXmpp.logger.info "RECONNECTING"
+      connection.reconnect(jid.domain, port)
     end
 
     #.........................................................................................................
@@ -56,12 +60,13 @@ module AgentXmpp
 
     #.........................................................................................................
     def did_disconnect(client_connection)
-      AgentXmpp.logger.info "DISCONNECTED"
+      AgentXmpp.logger.warn "DISCONNECTED"
+      EventMachine::stop_event_loop
     end
 
     #.........................................................................................................
     def did_not_connect(client_connection)
-      AgentXmpp.logger.info "CONNECTION FAILED"
+      AgentXmpp.logger.warn "CONNECTION FAILED"
     end
 
     #.........................................................................................................
