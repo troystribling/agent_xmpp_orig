@@ -8,7 +8,7 @@ class PerformanceController < AgentXmpp::Controller
       PerformanceMonitor.cpu_total_gte_time(Time.now - interval)     
     end
     respond_to do |result|
-      result.to_x_data
+      LowPassFilter.apply_to(result).to_x_data
     end
     AgentXmpp.logger.info "ACTION: PerformanceController\#uptime"
   end

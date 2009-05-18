@@ -10,6 +10,7 @@ end
 AgentXmpp::Boot.after_app_load do
 
   AgentXmpp.logger.level = Logger::INFO
+  LowPassFilter.max_points = 75
   DataMapper.setup(:default, "sqlite3://#{app_dir}/db/agent_linux.db")
 
   # DataMapper::Logger.new(AgentXmpp.log_file, :debug)
