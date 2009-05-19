@@ -53,18 +53,18 @@ cpu                 system              cpu_total               percent     tota
                                         ctxt                    number/s    number of context switches per second
                                         processes               number/s    number of new processes per second
                                         procs_running           number      number of running processes
-memory              system              mem_total               MB          total amount of memory consumed by all 
+memory              system              mem_total               GB          total amount of memory consumed by all 
                                                                             activities
-                                        mem_free                MB          free memory
-                                        buffers                 MB          memory used by buffer cache
-                                        cached                  MB          memory used by page cache
-                                        swap_cached             MB          memory used by swap cache
-                                        cached_total            MB          total memory used by all caches
-                                        swap_total              MB          size of swap file
-                                        swap_free               MB          free space in swap file
-                                        swap_used               MB          space used in swap file
-                                        used_total              MB          total memory used by cache and processes
-                                        used_process            MB          total memory used by processes
+                                        mem_free                GB          free memory
+                                        buffers                 GB          memory used by buffer cache
+                                        cached                  GB          memory used by page cache
+                                        swap_cached             GB          memory used by swap cache
+                                        cached_total            GB          total memory used by all caches
+                                        swap_total              GB          size of swap file
+                                        swap_free               GB          free space in swap file
+                                        swap_used               GB          space used in swap file
+                                        used_total              GB          total memory used by cache and processes
+                                        used_process            GB          total memory used by processes
                                         pgin                    KB/s        total memory paged in
                                         pgout                   KB/s        total memory paged out
                                         pswpin                  KB/s        total memory paged in from swap file

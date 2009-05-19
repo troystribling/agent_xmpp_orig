@@ -26,7 +26,7 @@ class LinuxProcFiles
 
     #.......................................................................................................
     def meminfo
-      vals = cat("/proc/meminfo").collect{|v| (mon_val(v) / 1024).precision}
+      vals = cat("/proc/meminfo").collect{|v| (mon_val(v) / (1024 * 1024)).precision}
       {:mem_total         => vals[0],
        :mem_free          => vals[1],
        :buffers           => vals[2],
