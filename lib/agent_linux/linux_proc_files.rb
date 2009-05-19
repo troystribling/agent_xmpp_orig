@@ -27,24 +27,24 @@ class LinuxProcFiles
     #.......................................................................................................
     def meminfo
       vals = cat("/proc/meminfo").collect{|v| (mon_val(v) / 1024).precision}
-      {:mem_total     => vals[0],
-       :mem_free      => vals[1],
-       :buffers       => vals[2],
-       :cached        => vals[3],
-       :swap_cached   => vals[4],
-       :swap_total    => vals[11],
-       :swap_free     => vals[12],
-       :swap_used     => (vals[11] - vals[12]).precision,
-       :cached_total  => (vals[2] + vals[3] + vals[4]).precision,
-       :used_total    => (vals[0] - vals[1]).precision,
-       :used_process  => (vals[0] - vals[1] - vals[2] - vals[3] - vals[4]).precision}
+      {:mem_total         => vals[0],
+       :mem_free          => vals[1],
+       :buffers           => vals[2],
+       :cached            => vals[3],
+       :swap_cached       => vals[4],
+       :swap_total        => vals[11],
+       :swap_free         => vals[12],
+       :swap_used         => (vals[11] - vals[12]).precision,
+       :cached_total      => (vals[2] + vals[3] + vals[4]).precision,
+       :mem_used_total    => (vals[0] - vals[1]).precision,
+       :mem_used_process  => (vals[0] - vals[1] - vals[2] - vals[3] - vals[4]).precision}
     end
 
     #.......................................................................................................
     def vmstat
       rows = cat("/proc/vmstat").collect{|v| mon_val(v)}
       page_size = get_memory_page_size
-      {:pgin => (rows[15] * page_size).precision, :pgin => (rows[16] * page_size).precision,
+      {:pgin => (rows[15] * page_size).precision, :pgout => (rows[16] * page_size).precision,
        :pswpin => (rows[17] * page_size).precision, :pswpout => (rows[18] * page_size).precision,
        :pgfault => rows[26], :pgmajfault => rows[27]}         
     end
@@ -52,23 +52,24 @@ class LinuxProcFiles
     #.......................................................................................................
     def loadavg
       vals = cat("/proc/loadavg")[0].split(/\s+/)[0..-3].collect{|v| v.to_f}
-      {:one_minute => vals[0], :five_minute => vals[1], :fifteen_minue => vals[2]}        
+      {:one_minute_load => vals[0], :five_minute_load => vals[1], :fifteen_minue_load => vals[2]}        
     end
 
     #.......................................................................................................
     def net_dev
-      cat("/proc/net/dev").select{|r| /eth\d/.match(r)}.collect do |r|
+      net_stat = cat("/proc/net/dev").select{|r| /eth\d/.match(r)}.collect do |r|
         row = r.strip.split(/\s+/)
         vals = row[1..-1].collect{|v| v.to_f}
         {:if => row[0].chomp(':'), 
          :vals => {:recv_kbytes => (vals[0] / 1024).precision, :recv_packets => vals[1], :recv_errors => vals[2], :recv_drop => vals[3],
                    :trans_kbytes => (vals[8] / 1024).precision, :trans_packets => vals[9], :trans_errrors => vals[10], :trans_drop => vals[11]}}       
       end
+      net_stat.push({:if => 'all', :vals => total_stats(net_stat, :vals)})
     end
 
     #.......................................................................................................
     def diskstats
-      file_system_mount_to_device.inject([]) do |stats, mount|
+      disk_stats = file_system_mount_to_device.inject([]) do |stats, mount|
         stat_row = cat("/proc/diskstats").select{|row| /#{mount[:device].split("/").last}/.match(row)}.first
         unless stat_row.nil?
           stat_vals = stat_row.strip.split(/\s+/).collect{|v| v.to_f}
@@ -81,6 +82,7 @@ class LinuxProcFiles
           stats
         end        
       end
+      disk_stats.push({:mount => 'all', :vals => total_stats(disk_stats, :vals), :time_vals => total_stats(disk_stats, :time_vals)})
     end
 
     #......................................................................................................
@@ -90,6 +92,18 @@ class LinuxProcFiles
 
   ####.....................................................................................................
   private
+  
+    #.......................................................................................................
+    def total_stats(stats, hash_key)
+      tot = {}
+      stats.each do |val|
+        val[hash_key].each_pair do |k, v|
+          tot[k] ||= 0
+          tot[k] +=v
+        end 
+      end
+      tot
+    end
   
     #.......................................................................................................
     def time_interval(interval)
