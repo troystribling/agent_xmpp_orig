@@ -71,9 +71,9 @@ memory              system              mem_total               GB          tota
                                         pswpout                 KB/s        total memory paged out to swap file
                                         pgfault                 number/s    total page faults(soft and major)
                                         pgmajfault              number/s    total major page faults
-loadavg             system              one_minute              number      one minute load average
-                                        five_minute             number      five minute load average
-                                        fifteen_minute          number      fifteen minute load average
+loadavg             system              one_minute_load         number      one minute load average
+                                        five_minute_load        number      five minute load average
+                                        fifteen_minute_load     number      fifteen minute load average
 storage             mount point         used                    percent     total storage used by mount point relative 
                                                                             to size
                                         size                    MB          total storage allocated to mount point

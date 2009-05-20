@@ -7,5 +7,7 @@ AgentXmpp::Routing::Routes::draw do |map|
   
   #### performance commands
   map.connect 'cpu_total/execute',            :controller => 'performance', :action => 'cpu_total'
+  map.connect 'mem_used_total/execute',       :controller => 'performance', :action => 'mem_used_total'
+  map.connect 'one_minute_load/execute',      :controller => 'performance', :action => 'one_minute_load'
   
 end
