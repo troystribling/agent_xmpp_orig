@@ -41,9 +41,9 @@ class LinuxPerformance
       data = [data] unless data.kind_of?(Array)
       created_at = Time.now  
       data.each do |item|
-        PerformanceMonitor.new(:monitor => "used", :value => storage_used_to_f(item[:used]), :monitor_class => "storage", :monitor_object => item[:mount], 
+        PerformanceMonitor.new(:monitor => "file_system_used", :value => storage_used_to_f(item[:used]), :monitor_class => "storage", :monitor_object => item[:mount], 
                                :created_at => created_at).save
-        PerformanceMonitor.new(:monitor => "size", :value => storage_size_to_f(item[:size]), :monitor_class => "storage", :monitor_object => item[:mount], 
+        PerformanceMonitor.new(:monitor => "file_system_size", :value => storage_size_to_f(item[:size]), :monitor_class => "storage", :monitor_object => item[:mount], 
                                :created_at => created_at).save
       end   
       data = LinuxProcFiles.diskstats  

@@ -63,8 +63,8 @@ memory              system              mem_total               GB          tota
                                         swap_total              GB          size of swap file
                                         swap_free               GB          free space in swap file
                                         swap_used               GB          space used in swap file
-                                        used_total              GB          total memory used by cache and processes
-                                        used_process            GB          total memory used by processes
+                                        mem_used_total          GB          total memory used by cache and processes
+                                        mem_used_process        GB          total memory used by processes
                                         pgin                    KB/s        total memory paged in
                                         pgout                   KB/s        total memory paged out
                                         pswpin                  KB/s        total memory paged in from swap file
