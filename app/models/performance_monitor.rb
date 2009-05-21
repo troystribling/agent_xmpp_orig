@@ -59,7 +59,6 @@ class PerformanceMonitor
   ####------------------------------------------------------------------------------------------------------
   query_gte_time LinuxPerformanceMonitors.monitors_for_class(:cpu) 
   query_gte_time LinuxPerformanceMonitors.monitors_for_class(:memory) 
-
   query_gte_time_for_object LinuxPerformanceMonitors.monitors_for_class(:network)
   query_gte_time_for_object LinuxPerformanceMonitors.monitors_for_class(:storage)
   

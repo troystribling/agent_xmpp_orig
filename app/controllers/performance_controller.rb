@@ -36,7 +36,6 @@ class PerformanceController < AgentXmpp::Controller
   ####------------------------------------------------------------------------------------------------------
   time_series_request_for_monitor LinuxPerformanceMonitors.monitors_for_class(:cpu)
   time_series_request_for_monitor LinuxPerformanceMonitors.monitors_for_class(:memory)
-
   time_series_request_for_all_monitor LinuxPerformanceMonitors.monitors_for_class(:network)
   time_series_request_for_all_monitor LinuxPerformanceMonitors.monitors_for_class(:storage)
   

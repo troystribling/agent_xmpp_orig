@@ -2,6 +2,7 @@
 AgentXmpp::Boot.before_config_load do
 
   require 'agent_linux'
+  AgentXmpp::Boot.config_load_order = ['config/performance_monitors']
   AgentXmpp.logger.info "AgentXmpp::BootApp.on_app_start"
   
 end

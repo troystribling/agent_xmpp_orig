@@ -31,13 +31,13 @@ AgentXmpp.logger.info "STARTING AgentXmpp"
 AgentXmpp::Boot.call_before_config_load if AgentXmpp::Boot.respond_to?(:call_before_config_load)
 
 ####------------------------------------------------------------------------------------------------------
-AgentXmpp::Boot.load('config', {:exclude => ['config/boot']})
+AgentXmpp::Boot.load('config', {:exclude => ['config/boot'], :ordered_load => AgentXmpp::Boot.config_load_order})
 
 ####------------------------------------------------------------------------------------------------------
 AgentXmpp::Boot.call_before_app_load if AgentXmpp::Boot.respond_to?(:call_before_app_load)
 
 ####------------------------------------------------------------------------------------------------------
-AgentXmpp::Boot.load('app/models')
+AgentXmpp::Boot.load('app/models', {:ordered_load => AgentXmpp::Boot.app_load_order})
 AgentXmpp::Boot.load('app/controllers')
 
 ####------------------------------------------------------------------------------------------------------
