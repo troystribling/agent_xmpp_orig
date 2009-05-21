@@ -6,6 +6,7 @@ $:.unshift 'lib'
 ####------------------------------------------------------------------------------------------------------
 require 'optparse'
 require 'agent_xmpp'
+require 'config/boot'
 
 ####------------------------------------------------------------------------------------------------------
 config_file = 'config/agent.yml'
@@ -27,7 +28,10 @@ AgentXmpp.logger = Logger.new(AgentXmpp.log_file, 10, 1024000)
 AgentXmpp.logger.info "STARTING AgentXmpp"
 
 ####------------------------------------------------------------------------------------------------------
-AgentXmpp::Boot.load('config')
+AgentXmpp::Boot.call_before_config_load if AgentXmpp::Boot.respond_to?(:call_before_config_load)
+
+####------------------------------------------------------------------------------------------------------
+AgentXmpp::Boot.load('config', {:exclude => ['config/boot']})
 
 ####------------------------------------------------------------------------------------------------------
 AgentXmpp::Boot.call_before_app_load if AgentXmpp::Boot.respond_to?(:call_before_app_load)

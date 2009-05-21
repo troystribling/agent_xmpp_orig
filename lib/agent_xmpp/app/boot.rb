@@ -15,6 +15,11 @@ module AgentXmpp
       end
       
       #.......................................................................................................
+      def before_config_load(&blk)
+         define_meta_class_method(:call_before_config_load, &blk)
+      end
+
+      #.......................................................................................................
       def after_connection_completed(&blk)
          define_meta_class_method(:call_after_connection_completed, &blk)
       end
@@ -30,10 +35,12 @@ module AgentXmpp
       end
     
       ####------------------------------------------------------------------------------------------------------
-      def load(path)
+      def load(path, options = {})
+        exclude_files = options[:exclude] || []
         Find.find(path) do |file_path|
-          if file = /(.*)\.rb$/.match(file_path)
-            require file.to_a.last
+          if file_match = /(.*)\.rb$/.match(file_path)
+            file = file_match.captures.last
+            require file unless exclude_files.include?(file)
           end
         end
       end

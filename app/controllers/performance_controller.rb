@@ -5,7 +5,7 @@ class PerformanceController < AgentXmpp::Controller
   class << self
     
     #.........................................................................................................
-    def time_series_request_for(args)
+    def time_series_request_for_monitor(args)
       args = [args] unless args.kind_of?(Array)
       args.each do |monitor| 
         class_eval <<-do_eval
@@ -18,11 +18,11 @@ class PerformanceController < AgentXmpp::Controller
     end
   
     #.........................................................................................................
-    def time_series_request_for_all(args)
+    def time_series_request_for_all_monitor(args)
       args = [args] unless args.kind_of?(Array)
-      args.each do |arg| 
+      args.each do |monitor| 
         class_eval <<-do_eval
-          def #{arg[:monitor].to_s}
+          def #{monitor.to_s}
             result_for_monitor{|interval| PerformanceMonitor.#{monitor.to_s}_gte_time_for_object(interval, "all")}
             response_for_monitor("#{monitor.to_s}")
           end
@@ -34,9 +34,11 @@ class PerformanceController < AgentXmpp::Controller
   end
 
   ####------------------------------------------------------------------------------------------------------
-  time_series_request_for [:cpu_total, :processes, :procs_running, :procs_blocked, :ctxt, :one_minute_load]
-  time_series_request_for [:mem_used_total, :mem_used_process, :cached_total, :swap_used, :swap_free, :pgin, :pgout, 
-    :pswpin, :pswpout, :pgmajfault]
+  time_series_request_for_monitor LinuxPerformanceMonitors.monitors_for_class(:cpu)
+  time_series_request_for_monitor LinuxPerformanceMonitors.monitors_for_class(:memory)
+
+  time_series_request_for_all_monitor LinuxPerformanceMonitors.monitors_for_class(:network)
+  time_series_request_for_all_monitor LinuxPerformanceMonitors.monitors_for_class(:storage)
   
 ####------------------------------------------------------------------------------------------------------
 private

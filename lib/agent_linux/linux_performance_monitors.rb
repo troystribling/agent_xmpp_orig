@@ -16,6 +16,11 @@ class LinuxPerformanceMonitors
     attr_accessor :thresholds
     
     #.......................................................................................................
+    def monitors_for_class(mon_class)
+      @monitors[mon_class].map{|m| m[:monitor]}
+    end
+    
+    #.......................................................................................................
     def add_monitors
       yield self
     end
@@ -29,7 +34,7 @@ class LinuxPerformanceMonitors
 
     #.......................................................................................................
     def add(mon, units, description, options = {})
-      @collect_monitors.push({:monitor => mon, :monitor_class => mon_class, :description => description, :units => units})
+      @collect_monitors.push({:monitor => mon, :description => description, :units => units})
       @thresholds.push({:monitor => monitor, :threshold => options[:threshold]}) unless options[:threshold].nil?
     end
 

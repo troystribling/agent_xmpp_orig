@@ -51,8 +51,8 @@ class LinuxPerformance
         data.each do |stats|
           last_stats = @last_vals[:diskstats].select{|row| row[:mount].eql?(stats[:mount])}.first
           unless last_stats.nil?
-            save_monitor_hash_derivative(stats[:vals], last_stats[:vals], @last_time[:diskstats], "storage", stats[:mount])
-            storage_service_time(stats[:vals], last_stats[:vals], stats[:time_vals], last_stats[:time_vals], stats[:mount])
+            save_monitor_hash_derivative(stats[:vals], last_stats[:vals], @last_time[:diskstats], "storage", stats[:device])
+            storage_service_time(stats[:vals], last_stats[:vals], stats[:time_vals], last_stats[:time_vals], stats[:device])
           end
         end
       end

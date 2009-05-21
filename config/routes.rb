@@ -1,4 +1,20 @@
 ##############################################################################################################
+module AgentXmpp
+  class Boot
+    class << self
+
+      #.........................................................................................................
+      def route_for_monitor(args)
+        args.each do |monitor| 
+          map.connect "#{monitor}/execute", :controller => 'performance', :action => monitor
+        end
+      end
+
+    end
+  end
+end
+
+##############################################################################################################
 AgentXmpp::Routing::Routes::draw do |map|
   
   #### system commands
@@ -7,8 +23,9 @@ AgentXmpp::Routing::Routes::draw do |map|
   map.connect 'ethernet_interfaces/execute',  :controller => 'system',      :action => 'ethernet_interfaces'
   
   #### performance commands
-  map.connect 'cpu_total/execute',            :controller => 'performance', :action => 'cpu_total'
-  map.connect 'mem_used_total/execute',       :controller => 'performance', :action => 'mem_used_total'
-  map.connect 'one_minute_load/execute',      :controller => 'performance', :action => 'one_minute_load'
+  route_for_monitor LinuxPerformanceMonitors.monitors_for_class(:cpu) 
+  route_for_monitor LinuxPerformanceMonitors.monitors_for_class(:memory) 
+  route_for_monitor LinuxPerformanceMonitors.monitors_for_class(:storage) 
+  route_for_monitor LinuxPerformanceMonitors.monitors_for_class(:network) 
   
 end

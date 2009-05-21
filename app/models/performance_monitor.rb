@@ -57,12 +57,10 @@ class PerformanceMonitor
   ####------------------------------------------------------------------------------------------------------
   
   ####------------------------------------------------------------------------------------------------------
-  query_gte_time [:cpu_total, :processes, :procs_running, :procs_blocked, :ctxt, :one_minute_load] 
-  query_gte_time [:mem_used_total, :mem_used_process, :cached_total, :swap_used, :swap_free, :pgin, :pgout, 
-    :pswpin, :pswpout, :pgmajfault] 
+  query_gte_time LinuxPerformanceMonitors.monitors_for_class(:cpu) 
+  query_gte_time LinuxPerformanceMonitors.monitors_for_class(:memory) 
 
-  query_gte_time_for_object [:recv_kbytes, :trans_kbytes, :recv_errors, :trans_errrors, :recv_drop, :trans_drop]
-  query_gte_time_for_object [:reads, :kb_read, :writes, :kb_written, :time_reading, :time_writting, :busy_reading, 
-    :busy_writing,:service_time_reading, :srvice_time_writing, :service_time]
+  query_gte_time_for_object LinuxPerformanceMonitors.monitors_for_class(:network)
+  query_gte_time_for_object LinuxPerformanceMonitors.monitors_for_class(:storage)
   
 end

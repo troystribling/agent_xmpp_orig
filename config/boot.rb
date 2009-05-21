@@ -1,7 +1,14 @@
 ##############################################################################################################
-AgentXmpp::Boot.before_app_load do
+AgentXmpp::Boot.before_config_load do
 
   require 'agent_linux'
+  AgentXmpp.logger.info "AgentXmpp::BootApp.on_app_start"
+  
+end
+
+##############################################################################################################
+AgentXmpp::Boot.before_app_load do
+
   AgentXmpp.logger.info "AgentXmpp::BootApp.before_app_load"
   
 end
