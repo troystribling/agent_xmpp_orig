@@ -40,12 +40,19 @@ class LinuxPerformance
       data = LinuxCommands.file_system_usage
       data = [data] unless data.kind_of?(Array)
       created_at = Time.now  
-      data.each do |item|
-        PerformanceMonitor.new(:monitor => "file_system_used", :value => storage_used_to_f(item[:used]), :monitor_class => "storage", :monitor_object => item[:mount], 
+      totals = data.inject({:file_system_user => 0, :file_system_size => 0}) do |tots, item|
+        file_system_used = storage_used_to_f(item[:used])
+        file_system_size = storage_size_to_f(item[:size])
+        PerformanceMonitor.new(:monitor => "file_system_used", :value => file_system_used, :monitor_class => "storage", :monitor_object => item[:mount], 
                                :created_at => created_at).save
-        PerformanceMonitor.new(:monitor => "file_system_size", :value => storage_size_to_f(item[:size]), :monitor_class => "storage", :monitor_object => item[:mount], 
+        PerformanceMonitor.new(:monitor => "file_system_size", :value => file_system_size, :monitor_class => "storage", :monitor_object => item[:mount], 
                                :created_at => created_at).save
-      end   
+        {:file_system_used => tots[:file_system_user] += file_system_used, :file_system_size => tots[:file_system_size] += file_system_size}        
+      end  
+      PerformanceMonitor.new(:monitor => "file_system_used", :value => totals[:file_system_used], :monitor_class => "storage", :monitor_object => 'all', 
+                             :created_at => created_at).save
+      PerformanceMonitor.new(:monitor => "file_system_size", :value => totals[:file_system_size], :monitor_class => "storage", :monitor_object => 'all', 
+                             :created_at => created_at).save
       data = LinuxProcFiles.diskstats  
       unless @last_vals[:diskstats].nil?
         data.each do |stats|
