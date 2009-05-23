@@ -1,5 +1,5 @@
 ############################################################################################################
-class SystemController < AgentXmpp::Controller
+class SystemStatusController < AgentXmpp::Controller
 
   #.........................................................................................................
   def uptime
@@ -36,7 +36,16 @@ class SystemController < AgentXmpp::Controller
     end
     AgentXmpp.logger.info "ACTION: SystemController\#ethernet_intefaces"
   end
-  
+ 
+  #.........................................................................................................
+  def active_users
+    result_for do
+      LinuxCommands.who
+    end
+    respond_to do |result|
+      result.to_x_data
+    end
+  end
   
 ############################################################################################################
 # UptimeController

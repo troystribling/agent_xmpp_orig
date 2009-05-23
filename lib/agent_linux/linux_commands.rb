@@ -30,6 +30,17 @@ class LinuxCommands
       ifaces.count.eql?(1) ? ifaces.first : ifaces
     end
 
+    #.........................................................................................................
+    def who
+      users =`who`.split("\n").inject([]) do |result, user|
+        user_data = user.strip.split(/\s+/)
+        ip = /\((.*)\)/.match(user_data.last).captures.last
+        active_since = user_data[2] + ' ' + user_data[3]
+        result.push({:user => user_data[0], :active_since => active_since, :from_ip => ip})
+      end
+      users.count.eql?(1) ? users.first : users
+    end
+    
   ####.....................................................................................................
   private
                  
