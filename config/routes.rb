@@ -10,6 +10,13 @@ module AgentXmpp
         end
       end
 
+      #.........................................................................................................
+      def route_system_status(commands)
+        commands.each do |command| 
+          connect "#{command}/execute", :controller => 'system_status', :action => command
+        end
+      end
+
     end
   end
 end
@@ -18,10 +25,8 @@ end
 AgentXmpp::Routing::Routes.draw do |map|
   
   #### system commands
-  map.connect 'uptime/execute',               :controller => 'system_status',      :action => 'uptime'
-  map.connect 'file_system_usage/execute',    :controller => 'system_status',      :action => 'file_system_usage'
-  map.connect 'ethernet_interfaces/execute',  :controller => 'system_status',      :action => 'ethernet_interfaces'
-  map.connect 'active_users/execute',          :controller => 'system_status',      :action => 'active_users'
+  map.connect 'uptime/execute',                       :controller => 'system_status',      :action => 'uptime'
+  map.route_system_status(LinuxSystemStatusCommands.commands)
   
   #### performance commands
   map.route_for_monitor LinuxPerformanceMonitors.monitors_for_class(:cpu) 

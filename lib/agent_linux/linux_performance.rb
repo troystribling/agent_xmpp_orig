@@ -162,5 +162,5 @@ class LinuxPerformance
   end
          
 ############################################################################################################
-# LinuxCommands
+# LinuxPerformance
 end
