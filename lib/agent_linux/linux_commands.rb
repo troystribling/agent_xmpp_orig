@@ -73,8 +73,9 @@ class LinuxCommands
     #.........................................................................................................
     def largest_files
       files = (Dir.entries("/") - [".", "..", "sys", "srv", "proc", "lost+found"]).inject([]) do |result, r|
-        Find.find("/" + r) do |p|
+        Find.find("/"+r) do |p|
           next unless File.exists?(p)
+          next if File.symlink?(p)
           if File.directory?(p)                   
             if File.basename(p)[0] == ?.
               Find.prune
@@ -96,7 +97,7 @@ class LinuxCommands
       sockets = `netstat -ntl`.split("\n")[2..-1].collect do |sock|
         sock_data = sock.strip.split(/\s+/)
         port = sock_data[3].split(":").last
-        {:port => port, :service => servs[port].nil? ? "unknown" : servs[port][:service]}
+        {:port => port, :service => servs[port].nil? ? "-" : servs[port][:service]}
       end
       sockets.count.eql?(1) ? sockets.first : sockets
     end
@@ -114,7 +115,7 @@ class LinuxCommands
                     elsif servs[remote_ip.last]
                       servs[remote_ip.last][:service] 
                     else
-                      "unknown"
+                      "-"
                     end
           result.push({:ip => remote_ip[0], :port => remote_ip[1], :service => service})
         end
@@ -129,7 +130,7 @@ class LinuxCommands
       sockets = `netstat -nul`.split("\n")[2..-1].collect do |sock|  
         sock_data = sock.strip.split(/\s+/)
         port = sock_data[3].split(":").last
-        {:port => port, :service => servs[port].nil? ? "unknown" : servs[port][:service]}
+        {:port => port, :service => servs[port].nil? ? "-" : servs[port][:service]}
       end
       sockets.count.eql?(1) ? sockets.first : sockets
     end
