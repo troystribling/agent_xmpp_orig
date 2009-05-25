@@ -43,7 +43,7 @@ private
   #.........................................................................................................
   def response_for_status_request(monitor)
     respond_to {|result| result.to_x_data}
-    AgentXmpp.logger.info "ACTION: PerformanceController\##{monitor}"
+    AgentXmpp.logger.info "ACTION: SystemStatusController\##{monitor}"
   end  
   
 ############################################################################################################

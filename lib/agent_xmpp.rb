@@ -7,6 +7,7 @@ module AgentXmpp
 end
 
 require 'find'
+require 'ftools'
 
 require 'rubygems'
 require 'eventmachine'

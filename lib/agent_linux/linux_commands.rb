@@ -43,35 +43,46 @@ class LinuxCommands
 
     #.........................................................................................................
     def processes_using_most_memory
-      procs = `ps -eo pid,pcpu,pmem,comm`.split("\n").collect do |p|
-          {:pid => p[0], :command => p[3], :cpu => p[1].to_f, :memory => p[2].to_f}
-        end
-        largest_items_by_attribute(procs, :memory)
+      procs = `ps -eo pid,pcpu,pmem,comm`.split("\n")[1..-1].collect do |p|
+        p_data = p.strip.split(/\s+/)
+        {:pid => p_data[0], :command => p_data[3], :cpu => p_data[1].to_f, :memory => p_data[2].to_f}
+      end
+      largest_items_by_attribute(procs, :memory)
     end
 
     #.........................................................................................................
     def processes_using_most_cpu
-      procs = `ps -eo pid,pcpu,pmem,comm`.split("\n").collect do |p|
-        {:pid => p[0], :command => p[3], :cpu => p[1].to_f, :memory => p[2].to_f}
+      procs = `ps -eo pid,pcpu,pmem,comm`.split("\n")[1..-1].collect do |p|
+        p_data = p.strip.split(/\s+/)
+        {:pid => p_data[0], :command => p_data[3], :cpu => p_data[1].to_f, :memory => p_data[2].to_f}
       end
       largest_items_by_attribute(procs, :cpu)
     end
 
     #.........................................................................................................
     def largest_open_files
-      files = `lsof  -S 2 +D / | grep -E ' [0-9]+[wru] +REG' `.split("\n").collect do |file|
-        {:command => file[0], :file => file[8], :size => file[6].to_f/1024**2}
+      files = `lsof  -S 2 +D / | grep -E ' [0-9]+[wru] +REG' `.split("\n").inject([]) do |result, f|
+        unless /^lsof/.match(f)
+          f_data = f.strip.split(/\s+/)
+          result.push({:command => f_data[0], :file => f_data[8], :size => f_data[6].to_f/1024**2})
+        end
       end
       largest_items_by_attribute(files, :size)
     end
 
     #.........................................................................................................
     def largest_files
-      files = `ls --color=never /`.split("\n").inject([]) do |result, file|
-        unless file.eql?("/proc") or file.eql?("/sys")
-          du_result = `du -k /#{file}`.split("\n").collect do |f| 
-            fs = file.split(/\s+/)
-            result.push({:file => fs[1], :size => fs[0].to_f/1024})
+      files = (Dir.entries("/") - [".", "..", "sys", "srv", "proc", "lost+found"]).inject([]) do |result, r|
+        Find.find("/" + r) do |p|
+          next unless File.exists?(p)
+          if File.directory?(p)                   
+            if File.basename(p)[0] == ?.
+              Find.prune
+            else
+              next
+            end
+          else
+            result.push({:file => p, :size => File.size(p).to_f/1024**2})
           end
         end
         result
@@ -82,33 +93,45 @@ class LinuxCommands
     #.........................................................................................................
     def listening_tcp_sockets
       servs = services
-      `netstat -ntl`.split("\n").collect do |sock|
+      sockets = `netstat -ntl`.split("\n")[2..-1].collect do |sock|
         sock_data = sock.strip.split(/\s+/)
         port = sock_data[3].split(":").last
-        {:port => port, :service => servs[port][:service] || "unknown"}
+        {:port => port, :service => servs[port].nil? ? "unknown" : servs[port][:service]}
       end
+      sockets.count.eql?(1) ? sockets.first : sockets
     end
 
     #.........................................................................................................
     def connected_tcp_sockets
       servs = services
-      `netstat -nt`.split("\n").collect do |sock|
+      sockets = `netstat -nt`.split("\n")[2..-1].inject([]) do |result, sock|
         sock_data = sock.strip.split(/\s+/)
-        local_port = sock_data[3].split(":").last
-        remote_ip = sock_data[4].split(":")
-        {:local => sock_data[3], :remote => sock_data[4], 
-          :service => servs[local_port][:service] || servs[remote_ip.last][:service] || "unknown"}
+        if sock_data.last.eql?('ESTABLISHED')
+          local_port = sock_data[3].split(":").last
+          remote_ip = sock_data[4].split(":")
+          service = if servs[local_port]
+                      servs[local_port][:service] 
+                    elsif servs[remote_ip.last]
+                      servs[remote_ip.last][:service] 
+                    else
+                      "unknown"
+                    end
+          result.push({:ip => remote_ip[0], :port => remote_ip[1], :service => service})
+        end
+        result
       end
+      sockets.count.eql?(1) ? sockets.first : sockets
     end
 
     #.........................................................................................................
     def udp_sockets
       servs = services
-      `netstat -nul`.split("\n").collect do |sock|
+      sockets = `netstat -nul`.split("\n")[2..-1].collect do |sock|  
         sock_data = sock.strip.split(/\s+/)
         port = sock_data[3].split(":").last
-        {:port => port, :service => servs[port][:service] || "unknown"}
+        {:port => port, :service => servs[port].nil? ? "unknown" : servs[port][:service]}
       end
+      sockets.count.eql?(1) ? sockets.first : sockets
     end
 
   ####........................................................................................................
@@ -116,18 +139,18 @@ class LinuxCommands
 
     #.........................................................................................................
     def largest_items_by_attribute(items, by_attr)
-      largest_items = files.sort {|i1, i2| i1[by_attr] <=> i2[by_attr]}
+      largest_items = items.sort_by {|i| -i[by_attr]}
       largest_items = largest_items[0..9] if largest_items.count > 10
       largest_items.count.eql?(1) ? largest_items.first : largest_items
     end
 
     #.........................................................................................................
     def services
-      `cat /etc/services`.split("\n").strip.inject({}) do |result, serv|
+      `cat /etc/services`.split("\n").inject({}) do |result, serv|
         unless /^#/.match(serv) or serv.eql?("")
-          serv_data = serv.split(/\s+/)
+          serv_data = serv.split(/\t+/)
           pp = serv_data[1].split("/")
-          result[pp[1]] = {:service => serv_data[0], :port => pp[0], :protocol => pp[1]}
+          result[pp[0]] = {:service => serv_data[0], :port => pp[0], :protocol => pp[1]}
         end
         result
       end
