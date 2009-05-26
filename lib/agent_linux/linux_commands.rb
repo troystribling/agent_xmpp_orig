@@ -66,6 +66,7 @@ class LinuxCommands
           f_data = f.strip.split(/\s+/)
           result.push({:command => f_data[0], :file => f_data[8], :size => f_data[6].to_f/1024**2})
         end
+        result
       end
       largest_items_by_attribute(files, :size)
     end
@@ -94,10 +95,13 @@ class LinuxCommands
     #.........................................................................................................
     def listening_tcp_sockets
       servs = services
+      soc_procs = socket_processes
       sockets = `netstat -ntl`.split("\n")[2..-1].collect do |sock|
         sock_data = sock.strip.split(/\s+/)
         port = sock_data[3].split(":").last
-        {:port => port, :service => servs[port].nil? ? "-" : servs[port][:service]}
+        service = servs[port].nil? ? "-" : servs[port][:service]
+        command = servs[port].nil? ? soc_procs[port] : soc_procs[service]
+        {:port => port, :command => command || "-", :service => service}
       end
       sockets.count.eql?(1) ? sockets.first : sockets
     end
@@ -105,6 +109,7 @@ class LinuxCommands
     #.........................................................................................................
     def connected_tcp_sockets
       servs = services
+      soc_procs = socket_processes
       sockets = `netstat -nt`.split("\n")[2..-1].inject([]) do |result, sock|
         sock_data = sock.strip.split(/\s+/)
         if sock_data.last.eql?('ESTABLISHED')
@@ -115,9 +120,9 @@ class LinuxCommands
                     elsif servs[remote_ip.last]
                       servs[remote_ip.last][:service] 
                     else
-                      "-"
+                      remote_ip[1]
                     end
-          result.push({:ip => remote_ip[0], :port => remote_ip[1], :service => service})
+          result.push({:remote_ip => remote_ip[0], :service => service, :command => soc_procs[local_port] || "-"})
         end
         result
       end
@@ -127,10 +132,13 @@ class LinuxCommands
     #.........................................................................................................
     def udp_sockets
       servs = services
+      soc_procs = socket_processes
       sockets = `netstat -nul`.split("\n")[2..-1].collect do |sock|  
         sock_data = sock.strip.split(/\s+/)
         port = sock_data[3].split(":").last
-        {:port => port, :service => servs[port].nil? ? "-" : servs[port][:service]}
+        service = servs[port].nil? ? "-" : servs[port][:service]
+        command = servs[port].nil? ? soc_procs[port] : soc_procs[service]
+        {:port => port, :command => command || "-", :service => service}
       end
       sockets.count.eql?(1) ? sockets.first : sockets
     end
@@ -139,9 +147,22 @@ class LinuxCommands
   private
 
     #.........................................................................................................
+    def socket_processes
+      `lsof  -i -n`.split("\n")[1..-1].inject({}) do |result, s|
+        unless /^lsof/.match(s)
+          s_data = s.strip.split(/\s+/)
+          m = /(.*)->.*/.match(s_data[7]) || /.*:(.*)/.match(s_data[7])
+          local_port = m.captures.first.split(":").last
+          result[local_port] = s_data[0]
+        end
+        result
+      end
+    end
+
+    #.........................................................................................................
     def largest_items_by_attribute(items, by_attr)
       largest_items = items.sort_by {|i| -i[by_attr]}
-      largest_items = largest_items[0..9] if largest_items.count > 10
+      largest_items = largest_items[0..4] if largest_items.count > 5
       largest_items.count.eql?(1) ? largest_items.first : largest_items
     end
 
