@@ -115,14 +115,19 @@ class LinuxCommands
         if sock_data.last.eql?('ESTABLISHED')
           local_port = sock_data[3].split(":").last
           remote_ip = sock_data[4].split(":")
-          service = if servs[local_port]
-                      servs[local_port][:service] 
-                    elsif servs[remote_ip.last]
-                      servs[remote_ip.last][:service] 
-                    else
-                      remote_ip[1]
-                    end
-          result.push({:remote_ip => remote_ip[0], :service => service, :command => soc_procs[local_port] || "-"})
+          local_service =  if servs[local_port]
+                             servs[local_port][:service] 
+                           else
+                             local_port
+                           end
+          remote_service = if servs[local_port]
+                             servs[local_port][:service] 
+                           elsif servs[remote_ip.last]
+                             servs[remote_ip.last][:service] 
+                           else
+                             remote_ip[1]
+                           end
+          result.push({:remote_ip => remote_ip[0], :service => remote_service, :command => soc_procs[local_service] || "-"})
         end
         result
       end
