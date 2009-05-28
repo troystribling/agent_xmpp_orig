@@ -60,6 +60,18 @@ class LinuxCommands
     end
 
     #.........................................................................................................
+    def zombie_processes
+      procs = `ps -eo pid,pcpu,pmem,state,comm`.split("\n")[1..-1].inject({}) do |result, p|
+        p_data = p.strip.split(/\s+/)
+        if (p_data[3].eql?('Z'))
+          result.push({:pid => p_data[0], :command => p_data[4], :cpu => p_data[1].to_f, :memory => p_data[2].to_f})
+        else
+          result
+        end
+      end
+    end
+
+    #.........................................................................................................
     def largest_open_files
       files = `lsof  -S 2 +D / | grep -E ' [0-9]+[wru] +REG' `.split("\n").inject([]) do |result, f|
         unless /^lsof/.match(f)
